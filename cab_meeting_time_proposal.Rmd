@@ -1,0 +1,465 @@
+---
+title: "CAB Meeting Times"
+author: "Stevie Pederson"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE, message = FALSE,
+  fig.height = 9, fig.width = 10
+)
+```
+
+```{r packages}
+library(timechange)
+library(tidyverse)
+library(ggtext)
+library(pander)
+panderOptions("missing", "")
+panderOptions("table.split.table", Inf)
+```
+
+```{r draw-schedule}
+draw_schedule <- function(
+    dates, people, bus_hours = c(8, 18), upr = 23, lwr = 5,
+    exec = c("Stevie", "Lori", "Janani"), ...
+) {
+  exec_regexp <- paste0("(", paste(exec, collapse = "|"), ")")
+  people %>%
+    lapply(
+      \(x) mutate(
+        dates,
+        tz = x,
+        local = time_at_tz(utc, tz = x),
+        time =  format(local, "%H:%M"),
+        time_dbl =  hour(local) + minute(local)/60
+      )
+    ) %>%
+    bind_rows(.id = "member") %>%
+    mutate(
+      member = fct(
+        member,
+        levels = people %>%
+          lapply(\(x) now(tzone = x)) %>%
+          lapply(format, "%z") %>%
+          map_dbl(as.numeric) %>%
+          sort() %>%
+          names()
+      ) %>% 
+        fct_relabel(\(x) str_replace_all(x, exec_regexp, "**\\1**"))
+    ) %>%
+    arrange(member) %>%
+    mutate(
+      tz = tz %>% str_replace_all("(/)(.+)", "\n(\\2)") %>% fct_inorder(),
+      status = case_when(
+        time_dbl >= upr | time_dbl <= lwr ~ "Horrible",
+        time_dbl >= max(bus_hours) | time_dbl < min(bus_hours) ~ "Outside Hours",
+        time_dbl >= min(bus_hours) | time_dbl < max(bus_hours) ~ "Business Hours"
+      ) %>%
+        fct(levels = c("Horrible", "Outside Hours", "Business Hours"))
+    ) %>%
+    ggplot(aes(month, member)) +
+    geom_raster(aes(fill = status), alpha = 0.6) +
+    geom_text(aes(label = time), size = 3) +
+    facet_grid(rows = vars(tz), scales = "free", space = "free", ) +
+    labs(x = c(), y = c(), fill = "Status") +
+    scale_x_discrete(expand = expansion(0, 0)) +
+    scale_y_discrete(expand = expansion(0, 0)) +
+    scale_fill_manual(values = c("red3", "yellow3", "green3")) +
+    theme_bw() +
+    theme(
+      legend.position = "bottom", 
+      axis.text.y = element_markdown(), 
+      strip.text.y = element_text(angle = 0),
+      panel.spacing = unit(0, "npc"),
+      panel.grid = element_blank()
+    )
+}
+```
+
+
+## Introduction
+
+The initial proposal to shift meeting times in a rotating fashion was an attempt to be fair to all members, however, in reality there is a growing sense that the idea is not working as successfully as hoped for.
+In reality, there will be no solution that works for everyone as the spread of time zones is just to diverse.
+This is obviously an excellent problem to be wrangling, but it is still a significant challenge.
+A set of proposed options are given below.
+
+I've considered my understanding of standard business hours (8am to 5pm) to be the optimal time range for people, and between the hours of 11pm to 5am to be 'horrible'.
+Anything between these is 'Outside of Hours', which should still be realistic times for everyone, despite them not being super-convenient.
+
+An important consideration for each option is not only our own preferences, but the availability of Lori as both secretary and member of the Bioconductor Core Team, and the two co-chairs Janani & Stevie.
+
+There are four proposals given below as the probable best options for the current CAB.
+
+1. Placing the 'horrible times' in the empty space between the furthest spread members
+2. Fixing the start time at 9am US/Eastern for every meeting
+3. Starting based on the Western-most member of each region (mostly)
+4. The existing schedule I can see in my calendar
+
+I also note that time-zones may not describe exactly where everyone lives, but these are chosen to match the output of `OlsonNames()` which is how `R` wrangles time-zones.
+All projections have been made based on UTC time.
+
+Feel free to play with the code in the accompanying rmarkdown. 
+I kinda had fun...
+
+
+\clearpage
+
+## CAB Description
+
+```{r people-dates}
+people <- list(
+  Stevie = "Australia/Adelaide",
+  Janani = "US/Mountain",
+  Lori = "US/Eastern",
+  Enis = "US/Eastern",
+  Umar = "Africa/Lagos",
+  Zahraa = "US/Central",
+  Aedin = "Europe/Dublin",
+  Jasmine = "US/Eastern",
+  Xueyi = "Australia/Melbourne",
+  Maria = "Europe/Dublin",
+  Leo = "Europe/Helsinki",
+  Mengbo = "Australia/Melbourne",
+  Kozo = "Japan",
+  Tobi = "US/Eastern",
+  Nicole = "US/Pacific",
+  Johannes = "Europe/Rome",
+  Lluis = "Europe/Madrid",
+  Kevin = "Europe/London",
+  Luyi = "Asia/Shanghai",
+  Hedia = "Europe/Madrid",
+  Jiefei = "US/Central"
+)
+dates <- tibble(
+  date = ymd("20250101") + seq(0, 365),
+  weekday = wday(date, label = TRUE),
+  month = month(date, label = TRUE),
+  exists = TRUE
+) %>%
+  mutate(
+    nbr = cumsum(exists), .by = c(month, weekday)
+  ) %>%
+  dplyr::filter(
+    weekday == "Thu", nbr == 2, month > "Jan"
+  ) %>%
+  droplevels() %>% 
+  dplyr::select(date, month)
+```
+
+
+As it currently stands, the CAB contains `r length(people)` members, spread across `r length(unique(unlist(people)))` time-zones, with these broken down and grouped in the following table.
+
+```{r cab-summary-tbl}
+people %>% 
+  unlist() %>% 
+  enframe(name = "member", value = "tz") %>% 
+  mutate(
+    current_utc = tz %>% 
+      lapply(
+        \(x) now(tzone = x)
+      ) %>% 
+      map_chr(format, "%z"),
+    future_utc = tz %>% 
+      lapply(
+        \(x) time_at_tz(now() + 86400 * floor(365/2), x)
+      ) %>% 
+      map_chr(format, "%z"), 
+  ) %>% 
+  arrange(as.numeric(current_utc)) %>% 
+  chop(member) %>% 
+  mutate(
+    n = map_int(member, length),
+    member = map_chr(member, paste, collapse = ", ")
+  ) %>% 
+  rename_with(
+    \(x) x %>% str_to_title() %>% str_replace_all("_utc", " UTC") %>% str_replace("Tz", "TZ")
+  ) %>% 
+  pander(
+    justify = "lrrlr",
+    caption = "
+    Breakdown of all time zones with the current +UTC shift and where that shift will be 6 months into the future.
+    The largest 'empty space' time period is between the US West Coast & Melbourne, with no members in the time-zones between the two.
+    Currently this is 5hrs ($\\pm 1$ day), whilst in 6 months this will be 7 hours.
+    The other large time gaps are between 1: Helsinki & Shanghai, and, 2: Dublin/London and the US East Coast.
+    "
+  )
+```
+
+
+
+```{r tbl-empty-space}
+dates %>% 
+  mutate(
+    date = as_datetime(date),
+    `US/Pacific` = time_at_tz(date, "US/Pacific"),
+    `Australia/Melbourne` = time_at_tz(date, "Australia/Melbourne"),
+    `Europe/Helsinki` = time_at_tz(date, "Europe/Helsinki"),
+    `Asia/Shanghai` = time_at_tz(date, "Asia/Shanghai")
+  ) %>% 
+  mutate(
+    `US/Pacific` = hour(`US/Pacific`) + minute(`US/Pacific`) / 60,
+    `Australia/Melbourne` = hour(`Australia/Melbourne`) + minute(`Australia/Melbourne`) / 60,
+    `Europe/Helsinki` = hour(`Europe/Helsinki`) + minute(`Europe/Helsinki`) / 60,
+    `Asia/Shanghai` = hour(`Asia/Shanghai`) + minute(`Asia/Shanghai`) / 60,
+    pacific_diff = abs(`Australia/Melbourne` - `US/Pacific`),
+    contintental_diff = abs(`Asia/Shanghai` - `Europe/Helsinki`)
+  ) %>% 
+  dplyr::select(date, month, ends_with("diff")) %>% 
+  mutate(
+    `place_2-3am_in` = ifelse(contintental_diff == 5, "Pacific Ocean", "Helsinki-Asia")
+  ) %>% 
+  rename_with(\(x) x %>% str_replace_all("_", " ") %>% str_to_title()) %>% 
+  pander(
+    justify = "llrrl",
+    caption = "
+    Taking the two largest 'empty-space' regions, where no participants live, 
+    and looking for the time differences.
+    Time-zone differences between the US/Pacific & Melbourne are given as 'Pacific Diff', 
+    whilst those between Europe/Helsinki and Asia/Shanghai are given as 'Contintental Diff'.
+    "
+  )
+```
+\clearpage
+
+## Proposal One: Finding Empty Space
+
+The strategy attempted here is to find the 'empty' region on the planet at each given month, where no CAB members are located, which contains the longest duration relative to *everyone's lived time-zone*.
+If we place the difficult middle-of-the-night meeting times in these empty regions, the hoped for outcome will be the fewest CAB members having to endure middle-of-the-night meetings.
+Of course, the CAB contains a mix of 'morning people' and 'night-owls', making this a a near impossible challenge, however, if we assume somewhere between 2-3am should be placed in the centre of these empty regions, this might be the best starting point.
+
+For April to October, the best region to place the middle-of-the-night times is in the Pacific Ocean.
+For the other times, the best region to place these is between the most eastern European time-zone (Helsinki) and western Asian time-zone (Shanghai).
+
+
+```{r make-prop1-schedule}
+p <- dates %>% 
+  mutate(
+    utc = case_when(
+      month %in% c("Feb", "Mar", "Nov", "Dec") ~ as_datetime(date + 22/24),
+      TRUE ~ as_datetime(date + 13/24)
+    )
+  ) %>% 
+  draw_schedule(people)
+```
+
+
+Key points:
+
+- No-one has a meeting starting anywhere between 1am and 5am
+- Midnight meetings are minimised:
+    - Unfortunately Leo would still have `r p$data %>% dplyr::filter(member == "Leo" & time == "00:00") %>% nrow()`
+    - Mengbo & Xueyi have `r p$data %>% dplyr::filter(member == "Mengbo" & time == "00:00") %>% nrow()`
+- People near the edges of the empty-space are disadvantaged
+    - Most of Europe/Africa and China/Japan are inconvenient for Feb, March, Nov, Dec
+    - US/Pacific, Australia/Melbourne and Japan are inconvenient for Apr to Oct
+- Convenient for Lori, Janani and Stevie all year
+
+
+```{r tbl-horrible}
+p$data %>% 
+  summarise(
+    `After 11pm` = sum(time == "00:00" | time_dbl >= 23),
+    `6am Or Earlier` = sum(time_dbl <= 6 & time_dbl > 0),
+    .by = member
+  ) %>% 
+  dplyr::filter(
+    rowSums(.[-1]) > 0
+  ) %>% 
+  bind_rows(
+    summarise(.[-1], across(everything(), sum)) %>% mutate(member = "Total")
+  ) %>% 
+  mutate(
+    member = str_remove_all(member, "\\*"),
+    TZ = unlist(people)[member],
+    `Combined Problematic` = `After 11pm` + `6am Or Earlier` 
+  ) %>% 
+  dplyr::select(Member = member, TZ, everything()) %>% 
+  pander(
+    justify = "llrrr",
+    emphasize.strong.rows = which(str_detect(.$Member, "Total")),
+    caption = "
+    Summary of members with the most problematic meeting times,
+    even after avoiding the 1am to 5am timezone. 
+    These members are the most disadvantaged by this proposal
+    "
+  )
+```
+
+```{r schedule-empty-spaces, fig.cap = "Proposed schedule placing the largest time regions without members into the middle of the night"}
+p
+```
+
+
+\clearpage
+
+## Proposal Two: Fix Times at 9am For US/Eastern
+
+Key Points:
+
+- This is good for the key members Lori, Janani & Stevie
+- **Strongly disadvantages Mengbo & Xueyi**
+- Possibly workable but also inconvenient for Luyi, Kozo & Nicole
+
+```{r schedule-ny-fixed, fig.cap = "Proposed meeting times holding the start time fixed at 9am for US/Eastern"}
+p <- dates %>% 
+  mutate(
+    utc = case_when(
+      month %in% c("Feb", "Nov", "Dec") ~ as_datetime(date + 14/24),
+      TRUE ~ as_datetime(date + 13/24)
+    )
+  ) %>% 
+  draw_schedule(people)
+p
+```
+
+\clearpage
+
+```{r tbl-horrible2}
+p$data %>% 
+  summarise(
+    `After 11pm` = sum(time == "00:00" | time_dbl >= 23),
+    `6am Or Earlier` = sum(time_dbl <= 6 & time_dbl > 0),
+    .by = member
+  ) %>% 
+  dplyr::filter(
+    rowSums(.[-1]) > 0
+  ) %>% 
+  bind_rows(
+    summarise(.[-1], across(everything(), sum)) %>% mutate(member = "Total")
+  ) %>% 
+  mutate(
+    member = str_remove_all(member, "\\*"),
+    TZ = unlist(people)[member],
+    `Combined Problematic` = `After 11pm` + `6am Or Earlier` 
+  ) %>% 
+  dplyr::select(Member = member, TZ, everything()) %>% 
+  pander(
+    justify = "llrrr",
+    emphasize.strong.rows = which(str_detect(.$Member, "Total")),
+    caption = "
+    Summary of members with the most problematic meeting times,
+    if holding the start time fixed for US/Eastern. 
+    These members are the most disadvantaged by this proposal
+    "
+  )
+```
+
+
+\clearpage
+
+## Proposal Three: Start Times Based On The Western-Most Member
+
+This is a *slightly modified version of the current schedule*, taking the western-most member from each of Asia, Europe & the US as the key member.
+We then start meeting times *at 7am for that member* ensuring at least two larger regions have workable times.
+
+- 7am starts for Nicole (US). These can be negotiated to 6am if Nicole prefers
+- 7am starts for Luyi (Asia). These could also be negotiated to earlier if Luyi prefers
+- From experience, most US attendees will struggle to attend after 10pm. For meetings which should be based on the Western-most European member, **these have instead been started at 6am US/Eastern** to try and bring this US/Eastern back into possibility
+- Everyone gets at least 4 meetings in standard business hours (8am to 5pm as shown in green), except Luyi
+- No-one has more than 4 'horrible' meeting times (11pm to 5am)
+- Sept & Oct look the least satisfactory
+
+```{r schedule-western, fig.cap = "Modified version of the current meeting schedule, setting the start time at 7am for the western-most member of each region (except Europe). 1) Feb-Apr favour Europe & Asia, 2) May-Aug favour the US & Europe, whilst 3) Sep-Dec favours Asia & the US"}
+p <- dates %>% 
+  mutate(
+    utc = case_when(
+      month %in% c("Feb") ~ as_datetime(date + 11/24),
+      month %in% c("Mar", "Apr") ~ as_datetime(date + 10/24),
+      month %in% c("May", "Jun", "Jul", "Aug") ~ as_datetime(date + 14/24),
+      month %in% c("Sep", "Oct") ~ as_datetime(date + 23/24),
+      TRUE ~ as_datetime(date + 23/24)
+    )
+  ) %>% 
+  draw_schedule(people)
+p
+```
+
+
+```{r tbl-horrible3}
+p$data %>% 
+  summarise(
+    `After 11pm` = sum(time == "00:00" | time_dbl >= 23),
+    `6am Or Earlier` = sum(time_dbl <= 6 & time_dbl > 0),
+    .by = member
+  ) %>% 
+  dplyr::filter(
+    rowSums(.[-1]) > 0
+  ) %>% 
+  bind_rows(
+    summarise(.[-1], across(everything(), sum)) %>% mutate(member = "Total")
+  ) %>% 
+  mutate(
+    member = str_remove_all(member, "\\*"),
+    TZ = unlist(people)[member],
+    `Combined Problematic` = `After 11pm` + `6am Or Earlier` 
+  ) %>% 
+  dplyr::select(Member = member, TZ, everything()) %>% 
+  pander(
+    justify = "llrrr",
+    emphasize.strong.rows = which(str_detect(.$Member, "Total")),
+    caption = "
+    Summary of members with the most problematic meeting times,
+    if holding the start time fixed for the most western member of each region. 
+    These members are the most disadvantaged by this proposal
+    "
+  )
+```
+
+\clearpage
+
+## Proposal Four: Current Schedule
+
+Key points:
+
+- March & April meetings will be very difficult for Lori & Janani
+- March & April will also cause problems for many in Europe & the US
+
+
+```{r schedule-current, fig.cap = "The current meeting schedule, shifting by 8hrs every 4 months. Shifts have been estimated based on my own calendar invitations, so hopefully they're accurate"}
+p <- dates %>% 
+  mutate(
+    utc = case_when(
+      month %in% c("Mar") ~ as_datetime(date + 5/24),
+      month %in% c("Feb", "Apr") ~ as_datetime(date + 6/24),
+      month %in% c("May", "Jun", "Jul", "Aug") ~ as_datetime(date + 14/24),
+      month %in% c("Nov") ~ as_datetime(date + 23/24),
+      TRUE ~ as_datetime(date + 22/24)
+    )
+  ) %>% 
+  draw_schedule(people)
+p
+```
+
+\clearpage
+
+```{r tbl-horrible4}
+p$data %>% 
+  summarise(
+    `After 11pm` = sum(time == "00:00" | time_dbl >= 23),
+    `6am Or Earlier` = sum(time_dbl <= 6 & time_dbl > 0),
+    .by = member
+  ) %>% 
+  dplyr::filter(
+    rowSums(.[-1]) > 0
+  ) %>% 
+  bind_rows(
+    summarise(.[-1], across(everything(), sum)) %>% mutate(member = "Total")
+  ) %>% 
+  mutate(
+    member = str_remove_all(member, "\\*"),
+    TZ = unlist(people)[member],
+    `Combined Problematic` = `After 11pm` + `6am Or Earlier` 
+  ) %>% 
+  dplyr::select(Member = member, TZ, everything()) %>% 
+  pander(
+    justify = "llrrr",
+    emphasize.strong.rows = which(str_detect(.$Member, "Total")),
+    caption = "
+    Summary of members with the most problematic meeting times if adhering to the current schedule. 
+    "
+  )
+```
