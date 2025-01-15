@@ -353,15 +353,16 @@ p$data %>%
 
 ## Proposal Three: Start Times Based On The Western-Most Member
 
-This is a *slightly modified version of the current schedule*, taking the western-most member from each of Asia, Europe & the US as the key member.
+This is a *slightly modified version of the current schedule*, taking the western-most, regularly attending member from each of Asia, Europe & the US as the key member.
 We then start meeting times *at 7am for that member* ensuring at least two larger regions have workable times.
 
-- 7am starts for Nicole (US). These can be negotiated to 6am if Nicole prefers
-- 7am starts for Luyi (Asia). These could also be negotiated to earlier if Luyi prefers
+- 7am starts for Janani (US). These can be negotiated if Nicole is intending to resume participation in 2025 or if Janani prefers
+- 7am starts for Kozo (Asia). These could also be renegotiated if Luyi is intending to resume participation in 2024, or if Kozo prefers
 - From experience, most US attendees will struggle to attend after 10pm. For meetings which should be based on the Western-most European member, **these have instead been started at 6am US/Eastern** to try and bring this US/Eastern back into possibility
-- Everyone gets at least 4 meetings in standard business hours (8am to 5pm as shown in green), except Luyi
+- Everyone gets at least 4 meetings in standard business hours (8am to 5pm as shown in green), except Luyi who has not attended a meeting on over 12 months, and Kozo
 - No-one has more than 4 'horrible' meeting times (11pm to 5am)
-- Sept & Oct look the least satisfactory
+- Janani & Kozo appear the most disadvantaged 
+- For May to August, it's conceivable for the entire board to attend. Likewise, this could be repeated for Sep if this configuration was extended
 
 ```{r schedule-western, fig.cap = "Modified version of the current meeting schedule, setting the start time at 7am for the western-most member of each region (except Europe). 1) Feb-Apr favour Europe & Asia, 2) May-Aug favour the US & Europe, whilst 3) Sep-Dec favours Asia & the US"}
 p <- dates %>% 
@@ -369,9 +370,10 @@ p <- dates %>%
     utc = case_when(
       month %in% c("Feb") ~ as_datetime(date + 11/24),
       month %in% c("Mar", "Apr") ~ as_datetime(date + 10/24),
-      month %in% c("May", "Jun", "Jul", "Aug") ~ as_datetime(date + 14/24),
-      month %in% c("Sep", "Oct") ~ as_datetime(date + 23/24),
-      TRUE ~ as_datetime(date + 23/24)
+      month %in% c("May", "Jun", "Jul", "Aug") ~ as_datetime(date + 13/24),
+      # month %in% c("Sep") ~ as_datetime(date + 13/24),
+      month %in% c("Sep", "Oct") ~ as_datetime(date + 22/24),
+      TRUE ~ as_datetime(date + 22/24)
     )
   ) %>% 
   draw_schedule(people)
