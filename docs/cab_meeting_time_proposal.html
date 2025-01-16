@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Stevie Pederson" />
+
+<meta name="date" content="2025-01-16" />
+
+<title>CAB Meeting Times</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/sandstone.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Proposed CAB Meeting Times</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/smped/cab_meeting_times">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">CAB Meeting Times</h1>
+<h4 class="author">Stevie Pederson</h4>
+<h4 class="date">2025-01-16</h4>
+
+</div>
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>The initial proposal to shift meeting times in a rotating fashion was
+an attempt to be fair to all members, however, in reality there is a
+growing sense that the idea is not working as successfully as hoped for.
+In reality, there will be no solution that works for everyone as the
+spread of time zones is just to diverse. This is obviously an excellent
+problem to be wrangling, but it is still a significant challenge. A set
+of proposed options are given below.</p>
+<p>I’ve considered my understanding of standard business hours (8am to
+5pm) to be the optimal time range for people, and between the hours of
+11pm to 5am to be ‘horrible’. Anything between these is ‘Outside of
+Hours’, which should still be realistic times for everyone, despite them
+not being super-convenient.</p>
+<p>An important consideration for each option is not only our own
+preferences, but the availability of Lori as both secretary and member
+of the Bioconductor Core Team, and the two co-chairs Janani &amp;
+Stevie.</p>
+<p>There are four proposals given below as the probable best options for
+the current CAB.</p>
+<ol style="list-style-type: decimal">
+<li>Placing the ‘horrible times’ in the empty space between the furthest
+spread members</li>
+<li>Fixing the start time at 9am US/Eastern for every meeting</li>
+<li>Starting based on the Western-most member of each region
+(mostly)</li>
+<li>The existing schedule I can see in my calendar</li>
+</ol>
+<p>I also note that time-zones may not describe exactly where everyone
+lives, but these are chosen to match the output of
+<code>OlsonNames()</code> which is how <code>R</code> wrangles
+time-zones. All projections have been made based on UTC time.</p>
+<p>Feel free to play with the code in the accompanying rmarkdown. I
+kinda had fun…</p>
+</div>
+<div id="cab-description" class="section level2">
+<h2>CAB Description</h2>
+<p>As it currently stands, the CAB contains 21 members, spread across 14
+time-zones, with these broken down and grouped in the following
+table.</p>
+<table>
+<caption>Breakdown of all time zones with the current +UTC shift and
+where that shift will be 6 months into the future. The largest ‘empty
+space’ time period is between the US West Coast &amp; Melbourne, with no
+members in the time-zones between the two. Currently this is 5hrs (<span
+class="math inline">\(\pm 1\)</span> day), whilst in 6 months this will
+be 7 hours. The other large time gaps are between 1: Helsinki &amp;
+Shanghai, and, 2: Dublin/London and the US East Coast.</caption>
+<colgroup>
+<col width="27%" />
+<col width="17%" />
+<col width="16%" />
+<col width="34%" />
+<col width="4%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">TZ</th>
+<th align="right">Current UTC</th>
+<th align="right">Future UTC</th>
+<th align="left">Member</th>
+<th align="right">N</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">US/Pacific</td>
+<td align="right">-0800</td>
+<td align="right">-0700</td>
+<td align="left">Nicole</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">US/Mountain</td>
+<td align="right">-0700</td>
+<td align="right">-0600</td>
+<td align="left">Janani</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">US/Central</td>
+<td align="right">-0600</td>
+<td align="right">-0500</td>
+<td align="left">Zahraa, Jiefei</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">US/Eastern</td>
+<td align="right">-0500</td>
+<td align="right">-0400</td>
+<td align="left">Lori, Enis, Jasmine, Tobi</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Europe/Dublin</td>
+<td align="right">+0000</td>
+<td align="right">+0100</td>
+<td align="left">Aedin, Maria</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Europe/London</td>
+<td align="right">+0000</td>
+<td align="right">+0100</td>
+<td align="left">Kevin</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Africa/Lagos</td>
+<td align="right">+0100</td>
+<td align="right">+0100</td>
+<td align="left">Umar</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Europe/Rome</td>
+<td align="right">+0100</td>
+<td align="right">+0200</td>
+<td align="left">Johannes</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Europe/Madrid</td>
+<td align="right">+0100</td>
+<td align="right">+0200</td>
+<td align="left">Lluís, Hedia</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Europe/Helsinki</td>
+<td align="right">+0200</td>
+<td align="right">+0300</td>
+<td align="left">Leo</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Asia/Shanghai</td>
+<td align="right">+0800</td>
+<td align="right">+0800</td>
+<td align="left">Luyi</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Japan</td>
+<td align="right">+0900</td>
+<td align="right">+0900</td>
+<td align="left">Kozo</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Australia/Adelaide</td>
+<td align="right">+1030</td>
+<td align="right">+0930</td>
+<td align="left">Stevie</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Australia/Melbourne</td>
+<td align="right">+1100</td>
+<td align="right">+1000</td>
+<td align="left">Xueyi, Mengbo</td>
+<td align="right">2</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Taking the two largest ‘empty-space’ regions, where no
+participants live, and looking for the time differences. Time-zone
+differences between the US/Pacific &amp; Melbourne are given as ‘Pacific
+Diff’, whilst those between Europe/Helsinki and Asia/Shanghai are given
+as ‘Contintental Diff’.</caption>
+<colgroup>
+<col width="17%" />
+<col width="10%" />
+<col width="20%" />
+<col width="27%" />
+<col width="23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Date</th>
+<th align="left">Month</th>
+<th align="right">Pacific Diff</th>
+<th align="right">Contintental Diff</th>
+<th align="left">Place 2-3am In</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2025-02-13</td>
+<td align="left">Feb</td>
+<td align="right">5</td>
+<td align="right">6</td>
+<td align="left">Helsinki-Asia</td>
+</tr>
+<tr class="even">
+<td align="left">2025-03-13</td>
+<td align="left">Mar</td>
+<td align="right">6</td>
+<td align="right">6</td>
+<td align="left">Helsinki-Asia</td>
+</tr>
+<tr class="odd">
+<td align="left">2025-04-10</td>
+<td align="left">Apr</td>
+<td align="right">7</td>
+<td align="right">5</td>
+<td align="left">Pacific Ocean</td>
+</tr>
+<tr class="even">
+<td align="left">2025-05-08</td>
+<td align="left">May</td>
+<td align="right">7</td>
+<td align="right">5</td>
+<td align="left">Pacific Ocean</td>
+</tr>
+<tr class="odd">
+<td align="left">2025-06-12</td>
+<td align="left">Jun</td>
+<td align="right">7</td>
+<td align="right">5</td>
+<td align="left">Pacific Ocean</td>
+</tr>
+<tr class="even">
+<td align="left">2025-07-10</td>
+<td align="left">Jul</td>
+<td align="right">7</td>
+<td align="right">5</td>
+<td align="left">Pacific Ocean</td>
+</tr>
+<tr class="odd">
+<td align="left">2025-08-14</td>
+<td align="left">Aug</td>
+<td align="right">7</td>
+<td align="right">5</td>
+<td align="left">Pacific Ocean</td>
+</tr>
+<tr class="even">
+<td align="left">2025-09-11</td>
+<td align="left">Sep</td>
+<td align="right">7</td>
+<td align="right">5</td>
+<td align="left">Pacific Ocean</td>
+</tr>
+<tr class="odd">
+<td align="left">2025-10-09</td>
+<td align="left">Oct</td>
+<td align="right">6</td>
+<td align="right">5</td>
+<td align="left">Pacific Ocean</td>
+</tr>
+<tr class="even">
+<td align="left">2025-11-13</td>
+<td align="left">Nov</td>
+<td align="right">5</td>
+<td align="right">6</td>
+<td align="left">Helsinki-Asia</td>
+</tr>
+<tr class="odd">
+<td align="left">2025-12-11</td>
+<td align="left">Dec</td>
+<td align="right">5</td>
+<td align="right">6</td>
+<td align="left">Helsinki-Asia</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="proposal-one-finding-empty-space" class="section level2">
+<h2>Proposal One: Finding Empty Space</h2>
+<p>The strategy attempted here is to find the ‘empty’ region on the
+planet at each given month, where no CAB members are located, which
+contains the longest duration relative to <em>everyone’s lived
+time-zone</em>. If we place the difficult middle-of-the-night meeting
+times in these empty regions, the hoped for outcome will be the fewest
+CAB members having to endure middle-of-the-night meetings. Of course,
+the CAB contains a mix of ‘morning people’ and ‘night-owls’, making this
+a a near impossible challenge, however, if we assume somewhere between
+2-3am should be placed in the centre of these empty regions, this might
+be the best starting point.</p>
+<p>For April to October, the best region to place the
+middle-of-the-night times is in the Pacific Ocean. For the other times,
+the best region to place these is between the most eastern European
+time-zone (Helsinki) and western Asian time-zone (Shanghai).</p>
+<p>Key points:</p>
+<ul>
+<li>No-one has a meeting starting anywhere between 1am and 5am</li>
+<li>Midnight meetings are minimised:
+<ul>
+<li>Unfortunately Leo would still have 4</li>
+<li>Mengbo &amp; Xueyi have 1</li>
+</ul></li>
+<li>People near the edges of the empty-space are disadvantaged
+<ul>
+<li>Most of Europe/Africa and China/Japan are inconvenient for Feb,
+March, Nov, Dec</li>
+<li>US/Pacific, Australia/Melbourne and Japan are inconvenient for Apr
+to Oct</li>
+</ul></li>
+<li>Convenient for Lori, Janani and Stevie all year</li>
+</ul>
+<table>
+<caption>Summary of members with the most problematic meeting times,
+even after avoiding the 1am to 5am timezone. These members are the most
+disadvantaged by this proposal</caption>
+<colgroup>
+<col width="13%" />
+<col width="25%" />
+<col width="14%" />
+<col width="19%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Member</th>
+<th align="left">TZ</th>
+<th align="right">After 11pm</th>
+<th align="right">6am Or Earlier</th>
+<th align="right">Combined Problematic</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Nicole</td>
+<td align="left">US/Pacific</td>
+<td align="right">0</td>
+<td align="right">7</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="left">Umar</td>
+<td align="left">Africa/Lagos</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Johannes</td>
+<td align="left">Europe/Rome</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Lluís</td>
+<td align="left">Europe/Madrid</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Hedia</td>
+<td align="left">Europe/Madrid</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Leo</td>
+<td align="left">Europe/Helsinki</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Luyi</td>
+<td align="left">Asia/Shanghai</td>
+<td align="right">0</td>
+<td align="right">4</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Stevie</td>
+<td align="left">Australia/Adelaide</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Xueyi</td>
+<td align="left">Australia/Melbourne</td>
+<td align="right">7</td>
+<td align="right">0</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="left">Mengbo</td>
+<td align="left">Australia/Melbourne</td>
+<td align="right">7</td>
+<td align="right">0</td>
+<td align="right">7</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Total</strong></td>
+<td align="left"></td>
+<td align="right"><strong>35</strong></td>
+<td align="right"><strong>11</strong></td>
+<td align="right"><strong>46</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="figure">
+<img src="cab_meeting_time_proposal_files/figure-html/schedule-empty-spaces-1.png" alt="Proposed schedule placing the largest time regions without members into the middle of the night" width="960" />
+<p class="caption">
+Proposed schedule placing the largest time regions without members into
+the middle of the night
+</p>
+</div>
+</div>
+<div id="proposal-two-fix-times-at-9am-for-useastern"
+class="section level2">
+<h2>Proposal Two: Fix Times at 9am For US/Eastern</h2>
+<p>Key Points:</p>
+<ul>
+<li>This is good for the key members Lori, Janani &amp; Stevie</li>
+<li><strong>Strongly disadvantages Mengbo &amp; Xueyi</strong></li>
+<li>Possibly workable but also inconvenient for Luyi, Kozo &amp;
+Nicole</li>
+</ul>
+<div class="figure">
+<img src="cab_meeting_time_proposal_files/figure-html/schedule-ny-fixed-1.png" alt="Proposed meeting times holding the start time fixed at 9am for US/Eastern" width="960" />
+<p class="caption">
+Proposed meeting times holding the start time fixed at 9am for
+US/Eastern
+</p>
+</div>
+<table>
+<caption>Summary of members with the most problematic meeting times, if
+holding the start time fixed for US/Eastern. These members are the most
+disadvantaged by this proposal</caption>
+<colgroup>
+<col width="13%" />
+<col width="25%" />
+<col width="14%" />
+<col width="19%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Member</th>
+<th align="left">TZ</th>
+<th align="right">After 11pm</th>
+<th align="right">6am Or Earlier</th>
+<th align="right">Combined Problematic</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Nicole</td>
+<td align="left">US/Pacific</td>
+<td align="right">0</td>
+<td align="right">11</td>
+<td align="right">11</td>
+</tr>
+<tr class="even">
+<td align="left">Kozo</td>
+<td align="left">Japan</td>
+<td align="right">3</td>
+<td align="right">0</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Stevie</td>
+<td align="left">Australia/Adelaide</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">Xueyi</td>
+<td align="left">Australia/Melbourne</td>
+<td align="right">8</td>
+<td align="right">3</td>
+<td align="right">11</td>
+</tr>
+<tr class="odd">
+<td align="left">Mengbo</td>
+<td align="left">Australia/Melbourne</td>
+<td align="right">8</td>
+<td align="right">3</td>
+<td align="right">11</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Total</strong></td>
+<td align="left"></td>
+<td align="right"><strong>21</strong></td>
+<td align="right"><strong>20</strong></td>
+<td align="right"><strong>41</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="proposal-three-start-times-based-on-the-western-most-member"
+class="section level2">
+<h2>Proposal Three: Start Times Based On The Western-Most Member</h2>
+<p>This is a <em>slightly modified version of the current schedule</em>,
+taking the western-most, regularly attending member from each of Asia,
+Europe &amp; the US as the key member. We then start meeting times
+<em>at 7am for that member</em> ensuring at least two larger regions
+have workable times.</p>
+<ul>
+<li>7am starts for Janani (US). These can be negotiated if Nicole is
+intending to resume participation in 2025 or if Janani prefers</li>
+<li>7am starts for Kozo (Asia). These could also be renegotiated if Luyi
+is intending to resume participation in 2024, or if Kozo prefers</li>
+<li>From experience, most US attendees will struggle to attend after
+10pm. For meetings which should be based on the Western-most European
+member, <strong>these have instead been started at 6am
+US/Eastern</strong> to try and bring this US/Eastern back into
+possibility</li>
+<li>Everyone gets at least 4 meetings in standard business hours (8am to
+5pm as shown in green), except Luyi who has not attended a meeting on
+over 12 months, and Kozo</li>
+<li>No-one has more than 4 ‘horrible’ meeting times (11pm to 5am)</li>
+<li>Janani &amp; Kozo appear the most disadvantaged</li>
+<li>For May to August, it’s conceivable for the entire board to attend.
+Likewise, this could be repeated for Sep if this configuration was
+extended</li>
+</ul>
+<div class="figure">
+<img src="cab_meeting_time_proposal_files/figure-html/schedule-western-1.png" alt="Modified version of the current meeting schedule, setting the start time at 7am for the western-most member of each region (except Europe). 1) Feb-Apr favour Europe &amp; Asia, 2) May-Aug favour the US &amp; Europe, whilst 3) Sep-Dec favours Asia &amp; the US" width="960" />
+<p class="caption">
+Modified version of the current meeting schedule, setting the start time
+at 7am for the western-most member of each region (except Europe). 1)
+Feb-Apr favour Europe &amp; Asia, 2) May-Aug favour the US &amp; Europe,
+whilst 3) Sep-Dec favours Asia &amp; the US
+</p>
+</div>
+<table>
+<caption>Summary of members with the most problematic meeting times, if
+holding the start time fixed for the most western member of each region.
+These members are the most disadvantaged by this proposal</caption>
+<colgroup>
+<col width="13%" />
+<col width="25%" />
+<col width="14%" />
+<col width="19%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Member</th>
+<th align="left">TZ</th>
+<th align="right">After 11pm</th>
+<th align="right">6am Or Earlier</th>
+<th align="right">Combined Problematic</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Nicole</td>
+<td align="left">US/Pacific</td>
+<td align="right">0</td>
+<td align="right">7</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="left">Janani</td>
+<td align="left">US/Mountain</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Zahraa</td>
+<td align="left">US/Central</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">Jiefei</td>
+<td align="left">US/Central</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Lori</td>
+<td align="left">US/Eastern</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">Enis</td>
+<td align="left">US/Eastern</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Jasmine</td>
+<td align="left">US/Eastern</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">Tobi</td>
+<td align="left">US/Eastern</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Aedin</td>
+<td align="left">Europe/Dublin</td>
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Maria</td>
+<td align="left">Europe/Dublin</td>
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Kevin</td>
+<td align="left">Europe/London</td>
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Umar</td>
+<td align="left">Africa/Lagos</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Johannes</td>
+<td align="left">Europe/Rome</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Lluís</td>
+<td align="left">Europe/Madrid</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Hedia</td>
+<td align="left">Europe/Madrid</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Leo</td>
+<td align="left">Europe/Helsinki</td>
+<td align="right">2</td>
+<td align="right">2</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Luyi</td>
+<td align="left">Asia/Shanghai</td>
+<td align="right">0</td>
+<td align="right">4</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Xueyi</td>
+<td align="left">Australia/Melbourne</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Mengbo</td>
+<td align="left">Australia/Melbourne</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Total</strong></td>
+<td align="left"></td>
+<td align="right"><strong>32</strong></td>
+<td align="right"><strong>34</strong></td>
+<td align="right"><strong>66</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="proposal-four-current-schedule" class="section level2">
+<h2>Proposal Four: Current Schedule</h2>
+<p>Key points:</p>
+<ul>
+<li>March &amp; April meetings will be very difficult for Lori &amp;
+Janani</li>
+<li>March &amp; April will also cause problems for many in Europe &amp;
+the US</li>
+</ul>
+<div class="figure">
+<img src="cab_meeting_time_proposal_files/figure-html/schedule-current-1.png" alt="The current meeting schedule, shifting by 8hrs every 4 months. Shifts have been estimated based on my own calendar invitations, so hopefully they're accurate" width="960" />
+<p class="caption">
+The current meeting schedule, shifting by 8hrs every 4 months. Shifts
+have been estimated based on my own calendar invitations, so hopefully
+they’re accurate
+</p>
+</div>
+<table>
+<caption>Summary of members with the most problematic meeting times if
+adhering to the current schedule.</caption>
+<colgroup>
+<col width="13%" />
+<col width="25%" />
+<col width="14%" />
+<col width="19%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Member</th>
+<th align="left">TZ</th>
+<th align="right">After 11pm</th>
+<th align="right">6am Or Earlier</th>
+<th align="right">Combined Problematic</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Nicole</td>
+<td align="left">US/Pacific</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Janani</td>
+<td align="left">US/Mountain</td>
+<td align="right">3</td>
+<td align="right">0</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Zahraa</td>
+<td align="left">US/Central</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">Jiefei</td>
+<td align="left">US/Central</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Lori</td>
+<td align="left">US/Eastern</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">Enis</td>
+<td align="left">US/Eastern</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Jasmine</td>
+<td align="left">US/Eastern</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">Tobi</td>
+<td align="left">US/Eastern</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Aedin</td>
+<td align="left">Europe/Dublin</td>
+<td align="right">3</td>
+<td align="right">2</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">Maria</td>
+<td align="left">Europe/Dublin</td>
+<td align="right">3</td>
+<td align="right">2</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="left">Kevin</td>
+<td align="left">Europe/London</td>
+<td align="right">3</td>
+<td align="right">2</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">Umar</td>
+<td align="left">Africa/Lagos</td>
+<td align="right">4</td>
+<td align="right">1</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="left">Johannes</td>
+<td align="left">Europe/Rome</td>
+<td align="right">4</td>
+<td align="right">1</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">Lluís</td>
+<td align="left">Europe/Madrid</td>
+<td align="right">4</td>
+<td align="right">1</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="left">Hedia</td>
+<td align="left">Europe/Madrid</td>
+<td align="right">4</td>
+<td align="right">1</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">Leo</td>
+<td align="left">Europe/Helsinki</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Luyi</td>
+<td align="left">Asia/Shanghai</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">Kozo</td>
+<td align="left">Japan</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Stevie</td>
+<td align="left">Australia/Adelaide</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Xueyi</td>
+<td align="left">Australia/Melbourne</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Mengbo</td>
+<td align="left">Australia/Melbourne</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Total</strong></td>
+<td align="left"></td>
+<td align="right"><strong>50</strong></td>
+<td align="right"><strong>30</strong></td>
+<td align="right"><strong>80</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

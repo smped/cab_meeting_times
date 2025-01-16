@@ -128,7 +128,7 @@ people <- list(
   Tobi = "US/Eastern",
   Nicole = "US/Pacific",
   Johannes = "Europe/Rome",
-  Lluis = "Europe/Madrid",
+  Lluís = "Europe/Madrid",
   Kevin = "Europe/London",
   Luyi = "Asia/Shanghai",
   Hedia = "Europe/Madrid",
@@ -293,6 +293,10 @@ p$data %>%
 p
 ```
 
+```{r export-empty, echo=FALSE}
+write_rds(p, here::here("data", "empty_space.rds"), compress = "gz")
+```
+
 
 \clearpage
 
@@ -348,6 +352,9 @@ p$data %>%
   )
 ```
 
+```{r export-ny-fixed, echo=FALSE}
+write_rds(p, here::here("data", "ny_fixed.rds"), compress = "gz")
+```
 
 \clearpage
 
@@ -411,6 +418,10 @@ p$data %>%
   )
 ```
 
+```{r export-western, echo=FALSE}
+write_rds(p, here::here("data", "western.rds"), compress = "gz")
+```
+
 \clearpage
 
 ## Proposal Four: Current Schedule
@@ -465,3 +476,8 @@ p$data %>%
     "
   )
 ```
+
+```{r export-current, echo=FALSE}
+write_rds(p, here::here("data", "current.rds"), compress = "gz")
+```
+

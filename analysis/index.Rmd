@@ -1,0 +1,499 @@
+---
+title: "Proposed CAB Meeting Times"
+date: "`r format(Sys.Date(), '%d %B, %Y')`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE, message = FALSE,
+  fig.height = 9, fig.width = 10
+)
+```
+
+```{r packages}
+library(tidyverse)
+library(ggtext)
+library(reactable)
+library(htmltools)
+theme_set(
+  theme_bw() + theme(title = element_text(hjust = 0.5))
+)
+```
+
+```{r people}
+people <- list(
+  Stevie = "Australia/Adelaide",
+  Janani = "US/Mountain",
+  Lori = "US/Eastern",
+  Enis = "US/Eastern",
+  Umar = "Africa/Lagos",
+  Zahraa = "US/Central",
+  Aedin = "Europe/Dublin",
+  Jasmine = "US/Eastern",
+  Xueyi = "Australia/Melbourne",
+  Maria = "Europe/Dublin",
+  Leo = "Europe/Helsinki",
+  Mengbo = "Australia/Melbourne",
+  Kozo = "Japan",
+  Tobi = "US/Eastern",
+  Nicole = "US/Pacific",
+  Johannes = "Europe/Rome",
+  Lluís = "Europe/Madrid",
+  Kevin = "Europe/London",
+  Luyi = "Asia/Shanghai",
+  Hedia = "Europe/Madrid",
+  Jiefei = "US/Central"
+)
+```
+
+
+## Introduction
+
+This contains a set of proposals for possible CAB meetings times to be voted on.
+The full explanations are [here](../analysis/cab_meeting_time_proposal.pdf).
+
+Meeting times for members are classified as:
+
+1. Business Hours: 8am to 5pm meeting times
+2. Outside Hours: 6-7am or 6-10pm meeting times
+3. Horrible: 11pm to 5am meeting times
+
+These can be considered overall as a reasonable description, despite some members finding a midnight meeting as quite convenient and a 6am start to be horrifying, with others being completely the opposite.
+
+## Current Schedule {.tabset}
+
+
+```{r load-current}
+current <- here::here("data", "current.rds") %>% read_rds()
+```
+
+This schedule was devised by shifting the meeting in 8 hour increments every 4 months.
+
+### Visualisation
+
+```{r fig-current}
+current + ggtitle("The Current Schedule") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+### Summary Table
+
+```{r tbl-current, echo = FALSE}
+cp <- tags$caption(
+  tags$em(
+    "Summary of meeting times for all members under the current schedule. Members are disadvantaged in an approximately equal fashion."
+  )
+)
+tbl <- current$data %>%
+  summarise(
+    n = dplyr::n(), .by = c(member, status)
+  ) %>% 
+  pivot_wider(names_from = "status", values_from = "n", values_fill = 0) %>% 
+  mutate(
+    member = fct_relabel(member, \(x) str_remove_all(x, "\\*")),
+    TZ = unlist(people)[as.character(member)]
+  ) %>% 
+  chop(member) %>% 
+  mutate(n = map_int(member, length)) %>% 
+  dplyr::select(TZ, n, member, `Business Hours`, everything()) %>% 
+  reactable(
+    showPageSizeOptions = FALSE, filterable = TRUE,pagination = FALSE,
+    columns = list(
+      n = colDef(
+        "In Time-Zone", maxWidth = 100, 
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            colInfo.data.forEach(function(row) {
+              n_members += row['n']
+            })
+            return (n_members).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE
+      ),
+      member = colDef("CAB Member(s)"),
+      TZ = colDef("Time-Zone",  footer = tags$b("Total")),
+      `Business Hours` = colDef(
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            let hrs = 0
+            let total = 0
+            colInfo.data.forEach(function(row) {
+              n_members = row['n']
+              hrs = row['Business Hours']
+              total += n_members * hrs
+            })
+            return (total).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE
+      ),
+      `Outside Hours` = colDef(
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            let hrs = 0
+            let total = 0
+            colInfo.data.forEach(function(row) {
+              n_members = row['n']
+              hrs = row['Outside Hours']
+              total += n_members * hrs
+            })
+            return (total).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE
+      ),
+      `Horrible` = colDef(
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            let hrs = 0
+            let total = 0
+            colInfo.data.forEach(function(row) {
+              n_members = row['n']
+              hrs = row['Horrible']
+              total += n_members * hrs
+            })
+            return (total).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE        
+      )
+      ),
+      theme = reactableTheme(style = list(fontSize = 11)),
+      elementId = "tbl-current"
+  )
+browsable(tagList(cp, tbl))
+```
+
+## Fixed At 9am US/Eastern {.tabset}
+
+
+```{r load-ny-fixed}
+ny_fixed <- here::here("data", "ny_fixed.rds") %>% read_rds()
+```
+
+This proposal attempts to help Lori continually attend, as member of the Bioconductor Core Team and CAB secretary, by starting at 9am US/Eastern every month.
+For some of the year, this potentially enables full attendance.
+
+### Visualisation
+
+```{r fig-ny-fixed}
+ny_fixed + ggtitle("Start Times Constantly at 9am (US/Eastern)") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+### Summary Table
+
+```{r tbl-ny-fixed, echo = FALSE}
+cp <- tags$caption(
+  tags$em(
+    "Summary of meeting times for all members under the schedule fixing start times at 9am US/Eastern. Members in the Asia/Pacific region are the most strongly disadvantaged."
+  )
+)
+tbl <- ny_fixed$data %>%
+  summarise(
+    n = dplyr::n(), .by = c(member, status)
+  ) %>% 
+  pivot_wider(names_from = "status", values_from = "n", values_fill = 0) %>% 
+  mutate(
+    member = fct_relabel(member, \(x) str_remove_all(x, "\\*")),
+    TZ = unlist(people)[as.character(member)]
+  ) %>% 
+  chop(member) %>% 
+  mutate(n = map_int(member, length)) %>% 
+  dplyr::select(TZ, n, member, `Business Hours`, everything()) %>% 
+  reactable(
+    showPageSizeOptions = FALSE, filterable = TRUE,pagination = FALSE,
+    columns = list(
+      n = colDef(
+        "In Time-Zone", maxWidth = 100, 
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            colInfo.data.forEach(function(row) {
+              n_members += row['n']
+            })
+            return (n_members).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE
+      ),
+      member = colDef("CAB Member(s)"),
+      TZ = colDef("Time-Zone",  footer = tags$b("Total")),
+      `Business Hours` = colDef(
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            let hrs = 0
+            let total = 0
+            colInfo.data.forEach(function(row) {
+              n_members = row['n']
+              hrs = row['Business Hours']
+              total += n_members * hrs
+            })
+            return (total).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE
+      ),
+      `Outside Hours` = colDef(
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            let hrs = 0
+            let total = 0
+            colInfo.data.forEach(function(row) {
+              n_members = row['n']
+              hrs = row['Outside Hours']
+              total += n_members * hrs
+            })
+            return (total).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE
+      ),
+      `Horrible` = colDef(
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            let hrs = 0
+            let total = 0
+            colInfo.data.forEach(function(row) {
+              n_members = row['n']
+              hrs = row['Horrible']
+              total += n_members * hrs
+            })
+            return (total).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE        
+      )
+      ),
+      theme = reactableTheme(style = list(fontSize = 11)),
+      elementId = "tbl-ny_fixed"
+  )
+browsable(tagList(cp, tbl))
+```
+
+## Setting Start Times By The Western-Most Members {.tabset}
+
+
+```{r load-western}
+western <- here::here("data", "western.rds") %>% read_rds()
+```
+
+This proposal shifts times every 4 months placing the western-most member of each region as the earliest start time (6am).
+Until March, US/Eastern was chosen instead of Europe/Dublin as an attempt to slightly maximise attendance
+
+### Visualisation
+
+```{r fig-western}
+western + ggtitle("Starting at 6am By Region") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+### Summary Table
+
+```{r tbl-western, echo = FALSE}
+cp <- tags$caption(
+  tags$em(
+    "Summary of meeting times starting at 6am for the most western member of each region. 
+    Members on the edges of each region are the most strongly disadvantaged."
+  )
+)
+tbl <- western$data %>%
+  summarise(
+    n = dplyr::n(), .by = c(member, status)
+  ) %>% 
+  pivot_wider(names_from = "status", values_from = "n", values_fill = 0) %>% 
+  mutate(
+    member = fct_relabel(member, \(x) str_remove_all(x, "\\*")),
+    TZ = unlist(people)[as.character(member)]
+  ) %>% 
+  chop(member) %>% 
+  mutate(n = map_int(member, length)) %>% 
+  dplyr::select(TZ, n, member, `Business Hours`, everything()) %>% 
+  reactable(
+    showPageSizeOptions = FALSE, filterable = TRUE,pagination = FALSE,
+    columns = list(
+      n = colDef(
+        "In Time-Zone", maxWidth = 100, 
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            colInfo.data.forEach(function(row) {
+              n_members += row['n']
+            })
+            return (n_members).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE
+      ),
+      member = colDef("CAB Member(s)"),
+      TZ = colDef("Time-Zone",  footer = tags$b("Total")),
+      `Business Hours` = colDef(
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            let hrs = 0
+            let total = 0
+            colInfo.data.forEach(function(row) {
+              n_members = row['n']
+              hrs = row['Business Hours']
+              total += n_members * hrs
+            })
+            return (total).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE
+      ),
+      `Outside Hours` = colDef(
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            let hrs = 0
+            let total = 0
+            colInfo.data.forEach(function(row) {
+              n_members = row['n']
+              hrs = row['Outside Hours']
+              total += n_members * hrs
+            })
+            return (total).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE
+      ),
+      `Horrible` = colDef(
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            let hrs = 0
+            let total = 0
+            colInfo.data.forEach(function(row) {
+              n_members = row['n']
+              hrs = row['Horrible']
+              total += n_members * hrs
+            })
+            return (total).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE        
+      )
+      ),
+      theme = reactableTheme(style = list(fontSize = 11)),
+      elementId = "tbl-western"
+  )
+browsable(tagList(cp, tbl))
+```
+
+
+## Difficult Meeting Times in Empty Time-Zones {.tabset}
+
+
+```{r load-empty-space}
+empty_space <- here::here("data", "empty_space.rds") %>% read_rds()
+```
+
+This proposal attempts to place meeting which might start between 1 and 5am either in the Pacific, between Australia & the US, or between Eastern Europe and Western Asia.
+
+### Visualisation
+
+```{r fig-empty-space}
+empty_space + ggtitle("Difficult Meeting Start Times In Empty Time Zones") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+### Summary Table
+
+```{r tbl-empty-space, echo = FALSE}
+cp <- tags$caption(
+  tags$em(
+    "Summary of meeting times for all members under the schedule placing the most difficult meeting times in time-zones without CAB members. 
+    Members on the edges of these regions are the most strongly disadvantaged."
+  )
+)
+tbl <- empty_space$data %>%
+  summarise(
+    n = dplyr::n(), .by = c(member, status)
+  ) %>% 
+  pivot_wider(names_from = "status", values_from = "n", values_fill = 0) %>% 
+  mutate(
+    member = fct_relabel(member, \(x) str_remove_all(x, "\\*")),
+    TZ = unlist(people)[as.character(member)]
+  ) %>% 
+  chop(member) %>% 
+  mutate(n = map_int(member, length)) %>% 
+  dplyr::select(TZ, n, member, `Business Hours`, everything()) %>% 
+  reactable(
+    showPageSizeOptions = FALSE, filterable = TRUE,pagination = FALSE,
+    columns = list(
+      n = colDef(
+        "In Time-Zone", maxWidth = 100, 
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            colInfo.data.forEach(function(row) {
+              n_members += row['n']
+            })
+            return (n_members).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE
+      ),
+      member = colDef("CAB Member(s)"),
+      TZ = colDef("Time-Zone",  footer = tags$b("Total")),
+      `Business Hours` = colDef(
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            let hrs = 0
+            let total = 0
+            colInfo.data.forEach(function(row) {
+              n_members = row['n']
+              hrs = row['Business Hours']
+              total += n_members * hrs
+            })
+            return (total).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE
+      ),
+      `Outside Hours` = colDef(
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            let hrs = 0
+            let total = 0
+            colInfo.data.forEach(function(row) {
+              n_members = row['n']
+              hrs = row['Outside Hours']
+              total += n_members * hrs
+            })
+            return (total).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE
+      ),
+      `Horrible` = colDef(
+        footer = JS(
+          "function(colInfo) {
+            let n_members = 0
+            let hrs = 0
+            let total = 0
+            colInfo.data.forEach(function(row) {
+              n_members = row['n']
+              hrs = row['Horrible']
+              total += n_members * hrs
+            })
+            return (total).toFixed(0).bold()
+          }"
+        ),
+        html = TRUE        
+      )
+      ),
+      theme = reactableTheme(style = list(fontSize = 11)),
+      elementId = "tbl-empty_space"
+  )
+browsable(tagList(cp, tbl))
+```
+

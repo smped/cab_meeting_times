@@ -8,8 +8,6 @@ eligible <- c(
   Zahraa = 3
 )
 
-names(which(eligible == 9))
-
 attendances <- list(
     Jan = "Kozo, Kevin, Johannes, Jiefei, Stevie, Janani, Mengbo, Aedin",
     Feb = "Mengbo, Maria, Lori, Xueyi, Leo, Kevin, Stevie, Mengbo, Aedin, Johannes",
@@ -24,7 +22,7 @@ attendances <- list(
     Nov = "Kozo, Lori, Zahraa, Johannes, Aedin, Tobi, Janani, Lluís, Stevie, Leo, Kevin",
     Dec = "Lori, Maria, Kozo, Xueyi, Lluís, Hedia"
 )
-attendances %>%
+attendance_summary <- attendances %>%
   lapply(str_split, ",") %>%
   lapply(unlist) %>%
   lapply(\(x) tibble(member = x)) %>%
@@ -38,7 +36,9 @@ attendances %>%
   mutate(
     eligible_2024 = eligible[as.character(member)],
     prop_attended = n_2024 / eligible_2024
-  ) %>%
+  )
+attendance_summary %>%
   # dplyr::filter(prop_attended <= 1/12)
   arrange(prop_attended) %>%
   print(n = nrow(.))
+write_rds(attendance_summary, here::here("data", "attendance_summary_2024.rds"), compress = "gz")

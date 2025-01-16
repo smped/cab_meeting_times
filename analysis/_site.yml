@@ -1,0 +1,18 @@
+name: Proposed CAB Meeting Times
+output_dir: ../docs
+navbar:
+  title: Proposed CAB Meeting Times
+  left:
+  - text: Home
+    href: index.html
+  right:
+  - icon: fa-github
+    href: https://github.com/smped/cab_meeting_times
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_float: yes
+    theme: sandstone
+    highlight: textmate
+
