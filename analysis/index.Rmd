@@ -285,7 +285,7 @@ western <- here::here("data", "western.rds") %>% read_rds()
 ```
 
 This proposal shifts times every 4 months placing the western-most member of each region as the earliest start time (6am).
-Until March, US/Eastern was chosen instead of Europe/Dublin as an attempt to slightly maximise attendance
+Until March, US/Eastern was chosen instead of Europe/Dublin as an attempt to slightly maximise attendance, given most US members find meetings after 10pm to be difficult to attend.
 
 ### Visualisation
 
@@ -395,7 +395,7 @@ browsable(tagList(cp, tbl))
 empty_space <- here::here("data", "empty_space.rds") %>% read_rds()
 ```
 
-This proposal attempts to place meeting which might start between 1 and 5am either in the Pacific, between Australia & the US, or between Eastern Europe and Western Asia.
+This proposal attempts to place meetings which might start between 1 and 5am either in the Pacific, between Australia & the US, or between Eastern Europe and Western Asia.
 
 ### Visualisation
 
