@@ -50,7 +50,7 @@ people <- list(
 ## Introduction
 
 This contains a set of proposals for possible CAB meetings times to be voted on.
-The full explanations are [here](../analysis/cab_meeting_time_proposal.pdf).
+The full explanations, including the working and thought processes, are [here](./cab_meeting_time_proposal.pdf).
 
 Meeting times for members are classified as:
 
@@ -58,7 +58,10 @@ Meeting times for members are classified as:
 2. Outside Hours: 6-7am or 6-10pm meeting times
 3. Horrible: 11pm to 5am meeting times
 
-These can be considered overall as a reasonable description, despite some members finding a midnight meeting as quite convenient and a 6am start to be horrifying, with others being completely the opposite.
+These can be considered as a reasonable description overall, despite some members finding a midnight meeting as quite convenient and a 6am start to be horrifying, with others being completely the opposite.
+It is assumed that people should be *easily able to attend meetings during business hours* and can be *reasonably expected to manage outside hours meetings* as well.
+
+All calculations below were made using the timezones contained in `OlsonNames()` and taking UTC as the reference timezone.
 
 ## Current Schedule {.tabset}
 
@@ -67,7 +70,7 @@ These can be considered overall as a reasonable description, despite some member
 current <- here::here("data", "current.rds") %>% read_rds()
 ```
 
-This schedule was devised by shifting the meeting in 8 hour increments every 4 months.
+This schedule was originally devised by shifting the meeting in 8 hour increments every 4 months.
 
 ### Visualisation
 
@@ -167,6 +170,11 @@ tbl <- current$data %>%
   )
 browsable(tagList(cp, tbl))
 ```
+
+### Key Points
+
+- Just doesn't seem to work despite being great in theory
+- Ironically places convenient times for Asia when Australians are on their summer breaks
 
 ## Fixed At 9am US/Eastern {.tabset}
 
@@ -277,6 +285,12 @@ tbl <- ny_fixed$data %>%
 browsable(tagList(cp, tbl))
 ```
 
+### Key Points
+
+- Relatively convenient for Lori, Janani & Stevie as secretary & co-chairs
+- Highly inconvenient for Mengbo & Xueyi
+- Also quite difficult for Nicole, Kozo and Luyi
+
 ## Setting Start Times By The Western-Most Members {.tabset}
 
 
@@ -285,7 +299,7 @@ western <- here::here("data", "western.rds") %>% read_rds()
 ```
 
 This proposal shifts times every 4 months placing the western-most member of each region as the earliest start time (6am).
-Until March, US/Eastern was chosen instead of Europe/Dublin as an attempt to slightly maximise attendance, given most US members find meetings after 10pm to be difficult to attend.
+Until March, US/Eastern was chosen instead of Europe/Dublin as an attempt to slightly maximise attendance.
 
 ### Visualisation
 
@@ -387,6 +401,11 @@ tbl <- western$data %>%
 browsable(tagList(cp, tbl))
 ```
 
+### Key Points
+
+- Historically, after 10pm is difficult for most Americans, which motivated the shift to a 6am start for US/Eastern. Otherwise, all US people would be after 10pm and unlikely to attend
+- Potentially quite difficult for Luyi & Kozo as meetings never occur during their standard business hours
+- Also potentially quite difficult for Nicole
 
 ## Difficult Meeting Times in Empty Time-Zones {.tabset}
 
@@ -497,3 +516,12 @@ tbl <- empty_space$data %>%
 browsable(tagList(cp, tbl))
 ```
 
+### Key Points
+
+- The largest regions with no CAB members are between Melbourne and US/Pacific from April to Oct. This is during the northern summer and southern winter
+- Once the next round of Daylight Savings shifts occur, this becomes between Europe/Helsinki and Asia/Shanghai as the southern hemisphere moves into summer.
+- Those on the borders of these time zones will be disadvantaged, most noticeably:
+    + Nicole, Mengbo, Xueyi, Kozo & Luyi
+    + Leo, Lluis, Hedia, Johannes & Umar
+- Also relatively convenient for Steve, Lori & Janani
+- Has only two basic shifts from one pattern to the other & back

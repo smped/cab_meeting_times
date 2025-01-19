@@ -361,7 +361,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Proposed CAB Meeting Times</h1>
-<h4 class="date">17 January, 2025</h4>
+<h4 class="date">19 January, 2025</h4>
 
 </div>
 
@@ -369,22 +369,27 @@ div.tocify {
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
 <p>This contains a set of proposals for possible CAB meetings times to
-be voted on. The full explanations are <a
-href="../analysis/cab_meeting_time_proposal.pdf">here</a>.</p>
+be voted on. The full explanations, including the working and thought
+processes, are <a href="./cab_meeting_time_proposal.pdf">here</a>.</p>
 <p>Meeting times for members are classified as:</p>
 <ol style="list-style-type: decimal">
 <li>Business Hours: 8am to 5pm meeting times</li>
 <li>Outside Hours: 6-7am or 6-10pm meeting times</li>
 <li>Horrible: 11pm to 5am meeting times</li>
 </ol>
-<p>These can be considered overall as a reasonable description, despite
+<p>These can be considered as a reasonable description overall, despite
 some members finding a midnight meeting as quite convenient and a 6am
-start to be horrifying, with others being completely the opposite.</p>
+start to be horrifying, with others being completely the opposite. It is
+assumed that people should be <em>easily able to attend meetings during
+business hours</em> and can be <em>reasonably expected to manage outside
+hours meetings</em> as well.</p>
+<p>All calculations below were made using the timezones contained in
+<code>OlsonNames()</code> and taking UTC as the reference timezone.</p>
 </div>
 <div id="current-schedule" class="section level2 tabset">
 <h2 class="tabset">Current Schedule</h2>
-<p>This schedule was devised by shifting the meeting in 8 hour
-increments every 4 months.</p>
+<p>This schedule was originally devised by shifting the meeting in 8
+hour increments every 4 months.</p>
 <div id="visualisation" class="section level3">
 <h3>Visualisation</h3>
 <p><img src="index_files/figure-html/fig-current-1.png" width="960" /></p>
@@ -396,6 +401,14 @@ increments every 4 months.</p>
 </caption>
 <div class="reactable html-widget html-fill-item" id="tbl-current" style="width:auto;height:auto;"></div>
 <script type="application/json" data-for="tbl-current">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"TZ":["US/Pacific","US/Mountain","US/Central","US/Eastern","Europe/Dublin","Europe/London","Africa/Lagos","Europe/Rome","Europe/Madrid","Europe/Helsinki","Asia/Shanghai","Japan","Australia/Adelaide","Australia/Melbourne"],"n":[1,1,2,4,2,1,1,1,2,1,1,1,1,2],"member":["Nicole","Janani",["Zahraa","Jiefei"],["Lori","Enis","Jasmine","Tobi"],["Aedin","Maria"],"Kevin","Umar","Johannes",["Lluís","Hedia"],"Leo","Luyi","Kozo","Stevie",["Xueyi","Mengbo"]],"Business Hours":[4,8,8,5,4,4,4,5,5,6,3,4,6,7],"Outside Hours":[6,0,0,3,3,3,3,2,2,1,8,3,1,0],"Horrible":[1,3,3,3,4,4,4,4,4,4,0,4,4,4]},"columns":[{"id":"TZ","name":"Time-Zone","type":"character","footer":{"name":"b","attribs":{},"children":["Total"]}},{"id":"n","name":"In Time-Zone","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            colInfo.data.forEach(function(row) {\n              n_members += row['n']\n            })\n            return (n_members).toFixed(0).bold()\n          }","html":true,"maxWidth":100},{"id":"member","name":"CAB Member(s)","type":["vctrs_list_of","vctrs_vctr","list"]},{"id":"Business Hours","name":"Business Hours","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            let hrs = 0\n            let total = 0\n            colInfo.data.forEach(function(row) {\n              n_members = row['n']\n              hrs = row['Business Hours']\n              total += n_members * hrs\n            })\n            return (total).toFixed(0).bold()\n          }","html":true},{"id":"Outside Hours","name":"Outside Hours","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            let hrs = 0\n            let total = 0\n            colInfo.data.forEach(function(row) {\n              n_members = row['n']\n              hrs = row['Outside Hours']\n              total += n_members * hrs\n            })\n            return (total).toFixed(0).bold()\n          }","html":true},{"id":"Horrible","name":"Horrible","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            let hrs = 0\n            let total = 0\n            colInfo.data.forEach(function(row) {\n              n_members = row['n']\n              hrs = row['Horrible']\n              total += n_members * hrs\n            })\n            return (total).toFixed(0).bold()\n          }","html":true}],"filterable":true,"pagination":false,"showPageSizeOptions":false,"theme":{"style":{"fontSize":11}},"elementId":"tbl-current","dataKey":"8446fe36df1fa95f71138f286637c446"},"children":[]},"class":"reactR_markup"},"evals":["tag.attribs.columns.1.footer","tag.attribs.columns.3.footer","tag.attribs.columns.4.footer","tag.attribs.columns.5.footer"],"jsHooks":[]}</script>
+</div>
+<div id="key-points" class="section level3">
+<h3>Key Points</h3>
+<ul>
+<li>Just doesn’t seem to work despite being great in theory</li>
+<li>Ironically places convenient times for Asia when Australians are on
+their summer breaks</li>
+</ul>
 </div>
 </div>
 <div id="fixed-at-9am-useastern" class="section level2 tabset">
@@ -416,6 +429,15 @@ full attendance.</p>
 <div class="reactable html-widget html-fill-item" id="tbl-ny_fixed" style="width:auto;height:auto;"></div>
 <script type="application/json" data-for="tbl-ny_fixed">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"TZ":["US/Pacific","US/Mountain","US/Central","US/Eastern","Europe/Dublin","Europe/London","Africa/Lagos","Europe/Rome","Europe/Madrid","Europe/Helsinki","Asia/Shanghai","Japan","Australia/Adelaide","Australia/Melbourne"],"n":[1,1,2,4,2,1,1,1,2,1,1,1,1,2],"member":["Nicole","Janani",["Zahraa","Jiefei"],["Lori","Enis","Jasmine","Tobi"],["Aedin","Maria"],"Kevin","Umar","Johannes",["Lluís","Hedia"],"Leo","Luyi","Kozo","Stevie",["Xueyi","Mengbo"]],"Business Hours":[0,0,11,11,11,11,11,11,11,11,0,0,0,0],"Outside Hours":[11,11,0,0,0,0,0,0,0,0,11,8,6,0],"Horrible":[0,0,0,0,0,0,0,0,0,0,0,3,5,11]},"columns":[{"id":"TZ","name":"Time-Zone","type":"character","footer":{"name":"b","attribs":{},"children":["Total"]}},{"id":"n","name":"In Time-Zone","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            colInfo.data.forEach(function(row) {\n              n_members += row['n']\n            })\n            return (n_members).toFixed(0).bold()\n          }","html":true,"maxWidth":100},{"id":"member","name":"CAB Member(s)","type":["vctrs_list_of","vctrs_vctr","list"]},{"id":"Business Hours","name":"Business Hours","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            let hrs = 0\n            let total = 0\n            colInfo.data.forEach(function(row) {\n              n_members = row['n']\n              hrs = row['Business Hours']\n              total += n_members * hrs\n            })\n            return (total).toFixed(0).bold()\n          }","html":true},{"id":"Outside Hours","name":"Outside Hours","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            let hrs = 0\n            let total = 0\n            colInfo.data.forEach(function(row) {\n              n_members = row['n']\n              hrs = row['Outside Hours']\n              total += n_members * hrs\n            })\n            return (total).toFixed(0).bold()\n          }","html":true},{"id":"Horrible","name":"Horrible","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            let hrs = 0\n            let total = 0\n            colInfo.data.forEach(function(row) {\n              n_members = row['n']\n              hrs = row['Horrible']\n              total += n_members * hrs\n            })\n            return (total).toFixed(0).bold()\n          }","html":true}],"filterable":true,"pagination":false,"showPageSizeOptions":false,"theme":{"style":{"fontSize":11}},"elementId":"tbl-ny_fixed","dataKey":"b84989b971494c36b754a0162bfe1aec"},"children":[]},"class":"reactR_markup"},"evals":["tag.attribs.columns.1.footer","tag.attribs.columns.3.footer","tag.attribs.columns.4.footer","tag.attribs.columns.5.footer"],"jsHooks":[]}</script>
 </div>
+<div id="key-points-1" class="section level3">
+<h3>Key Points</h3>
+<ul>
+<li>Relatively convenient for Lori, Janani &amp; Stevie as secretary
+&amp; co-chairs</li>
+<li>Highly inconvenient for Mengbo &amp; Xueyi</li>
+<li>Also quite difficult for Nicole, Kozo and Luyi</li>
+</ul>
+</div>
 </div>
 <div id="setting-start-times-by-the-western-most-members"
 class="section level2 tabset">
@@ -423,8 +445,7 @@ class="section level2 tabset">
 <p>This proposal shifts times every 4 months placing the western-most
 member of each region as the earliest start time (6am). Until March,
 US/Eastern was chosen instead of Europe/Dublin as an attempt to slightly
-maximise attendance, given most US members find meetings after 10pm to
-be difficult to attend.</p>
+maximise attendance.</p>
 <div id="visualisation-2" class="section level3">
 <h3>Visualisation</h3>
 <p><img src="index_files/figure-html/fig-western-1.png" width="960" /></p>
@@ -437,6 +458,17 @@ be difficult to attend.</p>
 </caption>
 <div class="reactable html-widget html-fill-item" id="tbl-western" style="width:auto;height:auto;"></div>
 <script type="application/json" data-for="tbl-western">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"TZ":["US/Pacific","US/Mountain","US/Central","US/Eastern","Europe/Dublin","Europe/London","Africa/Lagos","Europe/Rome","Europe/Madrid","Europe/Helsinki","Asia/Shanghai","Japan","Australia/Adelaide","Australia/Melbourne"],"n":[1,1,2,4,2,1,1,1,2,1,1,1,1,2],"member":["Nicole","Janani",["Zahraa","Jiefei"],["Lori","Enis","Jasmine","Tobi"],["Aedin","Maria"],"Kevin","Umar","Johannes",["Lluís","Hedia"],"Leo","Luyi","Kozo","Stevie",["Xueyi","Mengbo"]],"Business Hours":[4,4,8,6,7,7,7,7,7,7,0,0,3,4],"Horrible":[3,3,3,0,2,2,4,4,4,4,0,0,0,4],"Outside Hours":[4,4,0,5,2,2,0,0,0,0,11,11,8,3]},"columns":[{"id":"TZ","name":"Time-Zone","type":"character","footer":{"name":"b","attribs":{},"children":["Total"]}},{"id":"n","name":"In Time-Zone","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            colInfo.data.forEach(function(row) {\n              n_members += row['n']\n            })\n            return (n_members).toFixed(0).bold()\n          }","html":true,"maxWidth":100},{"id":"member","name":"CAB Member(s)","type":["vctrs_list_of","vctrs_vctr","list"]},{"id":"Business Hours","name":"Business Hours","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            let hrs = 0\n            let total = 0\n            colInfo.data.forEach(function(row) {\n              n_members = row['n']\n              hrs = row['Business Hours']\n              total += n_members * hrs\n            })\n            return (total).toFixed(0).bold()\n          }","html":true},{"id":"Horrible","name":"Horrible","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            let hrs = 0\n            let total = 0\n            colInfo.data.forEach(function(row) {\n              n_members = row['n']\n              hrs = row['Horrible']\n              total += n_members * hrs\n            })\n            return (total).toFixed(0).bold()\n          }","html":true},{"id":"Outside Hours","name":"Outside Hours","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            let hrs = 0\n            let total = 0\n            colInfo.data.forEach(function(row) {\n              n_members = row['n']\n              hrs = row['Outside Hours']\n              total += n_members * hrs\n            })\n            return (total).toFixed(0).bold()\n          }","html":true}],"filterable":true,"pagination":false,"showPageSizeOptions":false,"theme":{"style":{"fontSize":11}},"elementId":"tbl-western","dataKey":"e10bee96174f74272c111a30fd2a37f2"},"children":[]},"class":"reactR_markup"},"evals":["tag.attribs.columns.1.footer","tag.attribs.columns.3.footer","tag.attribs.columns.4.footer","tag.attribs.columns.5.footer"],"jsHooks":[]}</script>
+</div>
+<div id="key-points-2" class="section level3">
+<h3>Key Points</h3>
+<ul>
+<li>Historically, after 10pm is difficult for most Americans, which
+motivated the shift to a 6am start for US/Eastern. Otherwise, all US
+people would be after 10pm and unlikely to attend</li>
+<li>Potentially quite difficult for Luyi &amp; Kozo as meetings never
+occur during their standard business hours</li>
+<li>Also potentially quite difficult for Nicole</li>
+</ul>
 </div>
 </div>
 <div id="difficult-meeting-times-in-empty-time-zones"
@@ -457,6 +489,26 @@ between Eastern Europe and Western Asia.</p>
 </caption>
 <div class="reactable html-widget html-fill-item" id="tbl-empty_space" style="width:auto;height:auto;"></div>
 <script type="application/json" data-for="tbl-empty_space">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"TZ":["US/Pacific","US/Mountain","US/Central","US/Eastern","Europe/Dublin","Europe/London","Africa/Lagos","Europe/Rome","Europe/Madrid","Europe/Helsinki","Asia/Shanghai","Japan","Australia/Adelaide","Australia/Melbourne"],"n":[1,1,2,4,2,1,1,1,2,1,1,1,1,2],"member":["Nicole","Janani",["Zahraa","Jiefei"],["Lori","Enis","Jasmine","Tobi"],["Aedin","Maria"],"Kevin","Umar","Johannes",["Lluís","Hedia"],"Leo","Luyi","Kozo","Stevie",["Xueyi","Mengbo"]],"Business Hours":[4,4,11,10,7,7,7,7,7,7,0,0,4,4],"Outside Hours":[7,7,0,1,4,4,0,0,0,0,11,11,6,0],"Horrible":[0,0,0,0,0,0,4,4,4,4,0,0,1,7]},"columns":[{"id":"TZ","name":"Time-Zone","type":"character","footer":{"name":"b","attribs":{},"children":["Total"]}},{"id":"n","name":"In Time-Zone","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            colInfo.data.forEach(function(row) {\n              n_members += row['n']\n            })\n            return (n_members).toFixed(0).bold()\n          }","html":true,"maxWidth":100},{"id":"member","name":"CAB Member(s)","type":["vctrs_list_of","vctrs_vctr","list"]},{"id":"Business Hours","name":"Business Hours","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            let hrs = 0\n            let total = 0\n            colInfo.data.forEach(function(row) {\n              n_members = row['n']\n              hrs = row['Business Hours']\n              total += n_members * hrs\n            })\n            return (total).toFixed(0).bold()\n          }","html":true},{"id":"Outside Hours","name":"Outside Hours","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            let hrs = 0\n            let total = 0\n            colInfo.data.forEach(function(row) {\n              n_members = row['n']\n              hrs = row['Outside Hours']\n              total += n_members * hrs\n            })\n            return (total).toFixed(0).bold()\n          }","html":true},{"id":"Horrible","name":"Horrible","type":"numeric","footer":"function(colInfo) {\n            let n_members = 0\n            let hrs = 0\n            let total = 0\n            colInfo.data.forEach(function(row) {\n              n_members = row['n']\n              hrs = row['Horrible']\n              total += n_members * hrs\n            })\n            return (total).toFixed(0).bold()\n          }","html":true}],"filterable":true,"pagination":false,"showPageSizeOptions":false,"theme":{"style":{"fontSize":11}},"elementId":"tbl-empty_space","dataKey":"0fd1610b86101b720d36d3d36c4a7606"},"children":[]},"class":"reactR_markup"},"evals":["tag.attribs.columns.1.footer","tag.attribs.columns.3.footer","tag.attribs.columns.4.footer","tag.attribs.columns.5.footer"],"jsHooks":[]}</script>
+</div>
+<div id="key-points-3" class="section level3">
+<h3>Key Points</h3>
+<ul>
+<li>The largest regions with no CAB members are between Melbourne and
+US/Pacific from April to Oct. This is during the northern summer and
+southern winter</li>
+<li>Once the next round of Daylight Savings shifts occur, this becomes
+between Europe/Helsinki and Asia/Shanghai as the southern hemisphere
+moves into summer.</li>
+<li>Those on the borders of these time zones will be disadvantaged, most
+noticeably:
+<ul>
+<li>Nicole, Mengbo, Xueyi, Kozo &amp; Luyi</li>
+<li>Leo, Lluis, Hedia, Johannes &amp; Umar</li>
+</ul></li>
+<li>Also relatively convenient for Steve, Lori &amp; Janani</li>
+<li>Has only two basic shifts from one pattern to the other &amp;
+back</li>
+</ul>
 </div>
 </div>
 
