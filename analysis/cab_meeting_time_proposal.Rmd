@@ -86,7 +86,7 @@ draw_schedule <- function(
 ## Introduction
 
 The initial proposal to shift meeting times in a rotating fashion was an attempt to be fair to all members, however, in reality there is a growing sense that the idea is not working as successfully as hoped for.
-In reality, there will be no solution that works for everyone as the spread of time zones is just to diverse.
+In reality, there will be no solution that works for everyone as the spread of time zones is just too diverse.
 This is obviously an excellent problem to be wrangling, but it is still a significant challenge.
 A set of proposed options are given below.
 
@@ -98,8 +98,8 @@ An important consideration for each option is not only our own preferences, but 
 There are three proposals given below as the probable best options for the current CAB.
 
 1. Placing the 'horrible times' in the empty space between the furthest spread members
-2. Fixing the start time at 9am US/Eastern for every meeting
-3. Starting based on the Western-most member of each region (mostly)
+2. Fixing the start time at 12pm UTC for every meeting
+3. Starting based on the Western-most member of each region
 
 I also note that time-zones may not describe exactly where everyone lives, but these are chosen to match the output of `OlsonNames()` which is how `R` wrangles time-zones.
 All projections have been made based on UTC time.

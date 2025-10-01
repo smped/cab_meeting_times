@@ -1,10 +1,12 @@
 name: Proposed CAB Meeting Times
 output_dir: ../docs
 navbar:
-  title: Proposed CAB Meeting Times
+  title: Proposed CAB Meeting Times (2025)
   left:
   - text: Home
     href: index.html
+  - text: 2025-2026
+    href: cab_meeting_time_proposal.html
   right:
   - icon: fa-github
     href: https://github.com/smped/cab_meeting_times
