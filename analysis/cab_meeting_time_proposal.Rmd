@@ -312,7 +312,7 @@ Key Points:
 - Possibly workable but also inconvenient for Kozo & Zahraa
 - Offers the highest number of meetings scheduled during business hours
 
-```{r schedule-ny-fixed, fig.cap = "Proposed meeting times holding the start time fixed at 9am for US/Eastern"}
+```{r schedule-ny-fixed, fig.cap = "Proposed meeting times holding the start time fixed at 12pm UTC"}
 p <- dates %>% 
   mutate(
     utc = case_when(
