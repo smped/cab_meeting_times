@@ -2,7 +2,9 @@
 title: "CAB Meeting Times"
 author: "Stevie Pederson"
 date: "`r Sys.Date()`"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -24,7 +26,7 @@ panderOptions("table.split.table", Inf)
 ```{r draw-schedule}
 draw_schedule <- function(
     dates, people, bus_hours = c(8, 18), upr = 23, lwr = 5,
-    exec = c("Stevie", "Lori", "Janani"), ...
+    exec = c("Stevie", "Lori"), ...
 ) {
   exec_regexp <- paste0("(", paste(exec, collapse = "|"), ")")
   people %>%
@@ -58,7 +60,8 @@ draw_schedule <- function(
         time_dbl >= max(bus_hours) | time_dbl < min(bus_hours) ~ "Outside Hours",
         time_dbl >= min(bus_hours) | time_dbl < max(bus_hours) ~ "Business Hours"
       ) %>%
-        fct(levels = c("Horrible", "Outside Hours", "Business Hours"))
+        fct(levels = c("Horrible", "Outside Hours", "Business Hours")),
+      month = fct(as.character(month), levels = month.abb[c(11:12, 1:10)])
     ) %>%
     ggplot(aes(month, member)) +
     geom_raster(aes(fill = status), alpha = 0.6) +
@@ -90,14 +93,13 @@ A set of proposed options are given below.
 I've considered my understanding of standard business hours (8am to 5pm) to be the optimal time range for people, and between the hours of 11pm to 5am to be 'horrible'.
 Anything between these is 'Outside of Hours', which should still be realistic times for everyone, despite them not being super-convenient.
 
-An important consideration for each option is not only our own preferences, but the availability of Lori as both secretary and member of the Bioconductor Core Team, and the two co-chairs Janani & Stevie.
+An important consideration for each option is not only our own preferences, but the availability of Lori as both secretary and member of the Bioconductor Core Team, and the current (co-)chair Stevie.
 
-There are four proposals given below as the probable best options for the current CAB.
+There are three proposals given below as the probable best options for the current CAB.
 
 1. Placing the 'horrible times' in the empty space between the furthest spread members
 2. Fixing the start time at 9am US/Eastern for every meeting
 3. Starting based on the Western-most member of each region (mostly)
-4. The existing schedule I can see in my calendar
 
 I also note that time-zones may not describe exactly where everyone lives, but these are chosen to match the output of `OlsonNames()` which is how `R` wrangles time-zones.
 All projections have been made based on UTC time.
@@ -113,29 +115,28 @@ I kinda had fun...
 ```{r people-dates}
 people <- list(
   Stevie = "Australia/Adelaide",
-  Janani = "US/Mountain",
-  Lori = "US/Eastern",
-  Enis = "US/Eastern",
+  Lori = "America/New_York",
+  Enis = "America/New_York",
   Umar = "Africa/Lagos",
-  Zahraa = "US/Central",
+  Zahraa = "America/Chicago",
   Aedin = "Europe/Dublin",
-  Jasmine = "US/Eastern",
-  Xueyi = "Australia/Melbourne",
   Maria = "Europe/Dublin",
-  Leo = "Europe/Helsinki",
   Mengbo = "Australia/Melbourne",
-  Kozo = "Japan",
-  Tobi = "US/Eastern",
-  Nicole = "US/Pacific",
+  Kozo = "Asia/Tokyo",
+  Tobi = "America/New_York",
   Johannes = "Europe/Rome",
   Lluís = "Europe/Madrid",
   Kevin = "Europe/London",
-  Luyi = "Asia/Shanghai",
-  Hedia = "Europe/Madrid",
-  Jiefei = "US/Central"
+  Eliana = "Europe/Tirane",
+  Fabricio = "Europe/Brussels",
+  Izabela = "America/Belem",
+  Laurent = "Europe/Brussels",
+  Martha = "Europe/London",
+  Tuomas = "Europe/Helsinki",
+  Zugang = "Europe/Berlin"
 )
 dates <- tibble(
-  date = ymd("20250101") + seq(0, 365),
+  date = ymd("20251001") + seq(0, 365),
   weekday = wday(date, label = TRUE),
   month = month(date, label = TRUE),
   exists = TRUE
@@ -144,7 +145,7 @@ dates <- tibble(
     nbr = cumsum(exists), .by = c(month, weekday)
   ) %>%
   dplyr::filter(
-    weekday == "Thu", nbr == 2, month > "Jan"
+    weekday == "Thu", nbr == 2
   ) %>%
   droplevels() %>% 
   dplyr::select(date, month)
@@ -165,13 +166,15 @@ people %>%
       map_chr(format, "%z"),
     future_utc = tz %>% 
       lapply(
-        \(x) time_at_tz(now() + 86400 * floor(365/2), x)
+        \(x) time_at_tz(now() + 86400 * floor(365/4), x)
       ) %>% 
-      map_chr(format, "%z"), 
+      map_chr(format, "%z") %>% 
+      str_replace("(.+)([0-9]{2})$", "\\1:\\2"), 
   ) %>% 
   arrange(as.numeric(current_utc)) %>% 
   chop(member) %>% 
   mutate(
+    current_utc = str_replace(current_utc, "(.+)([0-9]{2})$", "\\1:\\2"),
     n = map_int(member, length),
     member = map_chr(member, paste, collapse = ", ")
   ) %>% 
@@ -181,10 +184,10 @@ people %>%
   pander(
     justify = "lrrlr",
     caption = "
-    Breakdown of all time zones with the current +UTC shift and where that shift will be 6 months into the future.
-    The largest 'empty space' time period is between the US West Coast & Melbourne, with no members in the time-zones between the two.
-    Currently this is 5hrs ($\\pm 1$ day), whilst in 6 months this will be 7 hours.
-    The other large time gaps are between 1: Helsinki & Shanghai, and, 2: Dublin/London and the US East Coast.
+    Breakdown of all time zones with the current +UTC shift and where that shift will be 3 months into the future.
+    The largest 'empty space' time period is between the US/Chicago & Australia/Melbourne, with no members in the time-zones between the two.
+    For Apr-Sep this is 9hrs ($\\pm 1$ day), whilst for Nov-Feb this will be 7 hours.
+    The other large time gaps are between 1: Helsinki & Tokyo, and, 2: Dublin/London and the US East Coast.
     "
   )
 ```
@@ -195,22 +198,22 @@ people %>%
 dates %>% 
   mutate(
     date = as_datetime(date),
-    `US/Pacific` = time_at_tz(date, "US/Pacific"),
+    `US/Central` = time_at_tz(date, "America/Chicago"),
     `Australia/Melbourne` = time_at_tz(date, "Australia/Melbourne"),
     `Europe/Helsinki` = time_at_tz(date, "Europe/Helsinki"),
-    `Asia/Shanghai` = time_at_tz(date, "Asia/Shanghai")
+    `Asia/Tokyo` = time_at_tz(date, "Asia/Tokyo")
   ) %>% 
   mutate(
-    `US/Pacific` = hour(`US/Pacific`) + minute(`US/Pacific`) / 60,
+    `US/Central` = hour(`US/Central`) + minute(`US/Central`) / 60,
     `Australia/Melbourne` = hour(`Australia/Melbourne`) + minute(`Australia/Melbourne`) / 60,
     `Europe/Helsinki` = hour(`Europe/Helsinki`) + minute(`Europe/Helsinki`) / 60,
-    `Asia/Shanghai` = hour(`Asia/Shanghai`) + minute(`Asia/Shanghai`) / 60,
-    pacific_diff = abs(`Australia/Melbourne` - `US/Pacific`),
-    contintental_diff = abs(`Asia/Shanghai` - `Europe/Helsinki`)
+    `Asia/Tokyo` = hour(`Asia/Tokyo`) + minute(`Asia/Tokyo`) / 60,
+    pacific_diff = abs(`Australia/Melbourne` - `US/Central`),
+    contintental_diff = abs(`Asia/Tokyo` - `Europe/Helsinki`)
   ) %>% 
   dplyr::select(date, month, ends_with("diff")) %>% 
   mutate(
-    `place_2-3am_in` = ifelse(contintental_diff == 5, "Pacific Ocean", "Helsinki-Asia")
+    `place_1-4am_in` = ifelse(pacific_diff > contintental_diff, "Pacific Ocean", "Helsinki-Asia")
   ) %>% 
   rename_with(\(x) x %>% str_replace_all("_", " ") %>% str_to_title()) %>% 
   pander(
@@ -218,49 +221,50 @@ dates %>%
     caption = "
     Taking the two largest 'empty-space' regions, where no participants live, 
     and looking for the time differences.
-    Time-zone differences between the US/Pacific & Melbourne are given as 'Pacific Diff', 
-    whilst those between Europe/Helsinki and Asia/Shanghai are given as 'Contintental Diff'.
+    Time-zone differences between the US/Central & Melbourne are given as 'Pacific Diff', 
+    whilst those between Europe/Helsinki and Asia/Tokyo are given as 'Contintental Diff'.
     "
   )
 ```
 \clearpage
 
-## Proposal One: Finding Empty Space
+## Proposal One: Placing Difficult Times In The Empty Space
 
 The strategy attempted here is to find the 'empty' region on the planet at each given month, where no CAB members are located, which contains the longest duration relative to *everyone's lived time-zone*.
 If we place the difficult middle-of-the-night meeting times in these empty regions, the hoped for outcome will be the fewest CAB members having to endure middle-of-the-night meetings.
-Of course, the CAB contains a mix of 'morning people' and 'night-owls', making this a a near impossible challenge, however, if we assume somewhere between 2-3am should be placed in the centre of these empty regions, this might be the best starting point.
+Of course, the CAB contains a mix of 'morning people' and 'night-owls', making this a a near impossible challenge, however, if we assume somewhere between 1-4am should be placed in the centre of these empty regions, this might be the best starting point.
 
-For April to October, the best region to place the middle-of-the-night times is in the Pacific Ocean.
-For the other times, the best region to place these is between the most eastern European time-zone (Helsinki) and western Asian time-zone (Shanghai).
+For March to October, the best region to place the middle-of-the-night times is in the Pacific Ocean with an 8-9hr difference.
+For the other times, the best region to place these is between the most eastern European time-zone (Helsinki) and western Asian time-zone (Tokyo) with a 7hr time difference.
 
 
-```{r make-prop1-schedule}
+```{r make-prop1-schedule,  fig.cap = "Proposed schedule placing the largest time regions without members into the middle of the night"}
 p <- dates %>% 
   mutate(
     utc = case_when(
-      month %in% c("Feb", "Mar", "Nov", "Dec") ~ as_datetime(date + 22/24),
-      TRUE ~ as_datetime(date + 13/24)
+      month %in% c("Jan", "Feb", "Nov", "Dec") ~ as_datetime(date + 21/24),
+      TRUE ~ as_datetime(date + 12/24)
     )
   ) %>% 
   draw_schedule(people)
+p
 ```
 
+`r pander(table(p@data$status))`
 
 Key points:
 
-- No-one has a meeting starting anywhere between 1am and 5am
-- Midnight meetings are minimised:
-    - Unfortunately Leo would still have `r p$data %>% dplyr::filter(member == "Leo" & time == "00:00") %>% nrow()`
-    - Mengbo & Xueyi have `r p$data %>% dplyr::filter(member == "Mengbo" & time == "00:00") %>% nrow()`
+- No-one has a meeting starting anywhere between 12am and 5am, however
+    - Kozo will have `r nrow(p@data %>% dplyr::filter(member == "Kozo", time_dbl == 6))` meetings scheduled at 6am
+    - Tuomas will have `r nrow(p@data %>% dplyr::filter(member == "Tuomas", time_dbl == 23))` meetings at 11pm
+    - Mengbo has `r nrow(p@data %>% dplyr::filter(member == "Mengbo", time_dbl == 23))` meeting at 11pm
 - People near the edges of the empty-space are disadvantaged
-    - Most of Europe/Africa and China/Japan are inconvenient for Feb, March, Nov, Dec
-    - US/Pacific, Australia/Melbourne and Japan are inconvenient for Apr to Oct
-- Convenient for Lori, Janani and Stevie all year
+    - Most of Europe/Africa and the Asia/Pacific are inconvenient for Nov through Mar
+    - US/Central, Australia/Melbourne and Japan are inconvenient for Apr to Oct
 
 
 ```{r tbl-horrible}
-p$data %>% 
+p@data %>% 
   summarise(
     `After 11pm` = sum(time == "00:00" | time_dbl >= 23),
     `6am Or Earlier` = sum(time_dbl <= 6 & time_dbl > 0),
@@ -289,9 +293,6 @@ p$data %>%
   )
 ```
 
-```{r schedule-empty-spaces, fig.cap = "Proposed schedule placing the largest time regions without members into the middle of the night"}
-p
-```
 
 ```{r export-empty, echo=FALSE}
 write_rds(p, here::here("data", "empty_space.rds"), compress = "gz")
@@ -300,30 +301,34 @@ write_rds(p, here::here("data", "empty_space.rds"), compress = "gz")
 
 \clearpage
 
-## Proposal Two: Fix Times at 9am For US/Eastern
+## Proposal Two: Fix Times at 12pm UTC
+
+This effectively places the horrible meeting times between Australia/Melbourne and America/Chicago for the entire year.
 
 Key Points:
 
-- This is good for the key members Lori, Janani & Stevie
-- **Strongly disadvantages Mengbo & Xueyi**
-- Possibly workable but also inconvenient for Luyi, Kozo & Nicole
+- This is good for the key members Lori & Stevie
+- **Strongly disadvantages Mengbo**
+- Possibly workable but also inconvenient for Kozo & Zahraa
+- Offers the highest number of meetings scheduled during business hours
 
 ```{r schedule-ny-fixed, fig.cap = "Proposed meeting times holding the start time fixed at 9am for US/Eastern"}
 p <- dates %>% 
   mutate(
     utc = case_when(
-      month %in% c("Feb", "Nov", "Dec") ~ as_datetime(date + 14/24),
-      TRUE ~ as_datetime(date + 13/24)
+      # month %in% c("Jan", "Feb", "Nov", "Dec") ~ as_datetime(date + 12/24),
+      TRUE ~ as_datetime(date + 12/24)
     )
   ) %>% 
   draw_schedule(people)
 p
 ```
 
-\clearpage
+
+`r pander(table(p@data$status))`
 
 ```{r tbl-horrible2}
-p$data %>% 
+p@data %>% 
   summarise(
     `After 11pm` = sum(time == "00:00" | time_dbl >= 23),
     `6am Or Earlier` = sum(time_dbl <= 6 & time_dbl > 0),
@@ -360,36 +365,37 @@ write_rds(p, here::here("data", "ny_fixed.rds"), compress = "gz")
 
 ## Proposal Three: Start Times Based On The Western-Most Member
 
-This is a *slightly modified version of the current schedule*, taking the western-most, regularly attending member from each of Asia, Europe & the US as the key member.
-We then start meeting times *at 7am for that member* ensuring at least two larger regions have workable times.
+This is a *slightly modified version of an earlier approach*, where meetings shift every 4 months. 
+For each block, we take the western-most member from each of Asia, Europe & the US as the key member.
+We then start meeting times *at 7, 8 or 9am for that member* to best accommodate other regions, and ensuring at least two larger regions have workable times.
 
-- 7am starts for Janani (US). These can be negotiated if Nicole is intending to resume participation in 2025 or if Janani prefers
-- 7am starts for Kozo (Asia). These could also be renegotiated if Luyi is intending to resume participation in 2024, or if Kozo prefers
-- From experience, most US attendees will struggle to attend after 10pm. For meetings which should be based on the Western-most European member, **these have instead been started at 6am US/Eastern** to try and bring this US/Eastern back into possibility
-- Everyone gets at least 4 meetings in standard business hours (8am to 5pm as shown in green), except Luyi who has not attended a meeting on over 12 months, and Kozo
+1. 6am starts for Kozo (Asia).
+2. 7am starts for Zahraa (US).
+3. 8am starts for Western Europe
+
+- Everyone gets at least 4 meetings in standard business hours except Stevie (8am to 5pm as shown in green)
 - No-one has more than 4 'horrible' meeting times (11pm to 5am)
-- Janani & Kozo appear the most disadvantaged 
-- For May to August, it's conceivable for the entire board to attend. Likewise, this could be repeated for Sep if this configuration was extended
+- For Apr to June, it's conceivable for the entire board to attend.
+- *This is unsatisfactory for Lori as an office-holder*
 
-```{r schedule-western, fig.cap = "Modified version of the current meeting schedule, setting the start time at 7am for the western-most member of each region (except Europe). 1) Feb-Apr favour Europe & Asia, 2) May-Aug favour the US & Europe, whilst 3) Sep-Dec favours Asia & the US"}
+```{r schedule-western, fig.cap = "Proposed rotating meeting schedule, setting the start time for the western-most member of each region. 1) Aug-Nov favour Europe & Asia, 2) Apr-July favour the US & Europe, whilst 3) Dec-Mar favours Asia & the US"}
 p <- dates %>% 
   mutate(
     utc = case_when(
-      month %in% c("Feb") ~ as_datetime(date + 11/24),
-      month %in% c("Mar", "Apr") ~ as_datetime(date + 10/24),
-      month %in% c("May", "Jun", "Jul", "Aug") ~ as_datetime(date + 13/24),
-      # month %in% c("Sep") ~ as_datetime(date + 13/24),
-      month %in% c("Sep", "Oct") ~ as_datetime(date + 22/24),
-      TRUE ~ as_datetime(date + 22/24)
+      month %in% c("Apr", "May", "Jun", "Jul") ~ as_datetime(date + 12/24),
+      month %in% c("Aug", "Sep", "Oct") ~ as_datetime(date + 7/24),
+      month %in% c("Nov") ~ as_datetime(date + 8/24),
+      TRUE ~ as_datetime(date + 21/24)
     )
   ) %>% 
   draw_schedule(people)
 p
 ```
 
+`r pander(table(p@data$status))`
 
 ```{r tbl-horrible3}
-p$data %>% 
+p@data %>% 
   summarise(
     `After 11pm` = sum(time == "00:00" | time_dbl >= 23),
     `6am Or Earlier` = sum(time_dbl <= 6 & time_dbl > 0),
@@ -422,62 +428,4 @@ p$data %>%
 write_rds(p, here::here("data", "western.rds"), compress = "gz")
 ```
 
-\clearpage
-
-## Proposal Four: Current Schedule
-
-Key points:
-
-- March & April meetings will be very difficult for Lori & Janani
-- March & April will also cause problems for many in Europe & the US
-
-
-```{r schedule-current, fig.cap = "The current meeting schedule, shifting by 8hrs every 4 months. Shifts have been estimated based on my own calendar invitations, so hopefully they're accurate"}
-p <- dates %>% 
-  mutate(
-    utc = case_when(
-      month %in% c("Mar") ~ as_datetime(date + 5/24),
-      month %in% c("Feb", "Apr") ~ as_datetime(date + 6/24),
-      month %in% c("May", "Jun", "Jul", "Aug") ~ as_datetime(date + 14/24),
-      month %in% c("Nov") ~ as_datetime(date + 23/24),
-      TRUE ~ as_datetime(date + 22/24)
-    )
-  ) %>% 
-  draw_schedule(people)
-p
-```
-
-\clearpage
-
-```{r tbl-horrible4}
-p$data %>% 
-  summarise(
-    `After 11pm` = sum(time == "00:00" | time_dbl >= 23),
-    `6am Or Earlier` = sum(time_dbl <= 6 & time_dbl > 0),
-    .by = member
-  ) %>% 
-  dplyr::filter(
-    rowSums(.[-1]) > 0
-  ) %>% 
-  bind_rows(
-    summarise(.[-1], across(everything(), sum)) %>% mutate(member = "Total")
-  ) %>% 
-  mutate(
-    member = str_remove_all(member, "\\*"),
-    TZ = unlist(people)[member],
-    `Combined Problematic` = `After 11pm` + `6am Or Earlier` 
-  ) %>% 
-  dplyr::select(Member = member, TZ, everything()) %>% 
-  pander(
-    justify = "llrrr",
-    emphasize.strong.rows = which(str_detect(.$Member, "Total")),
-    caption = "
-    Summary of members with the most problematic meeting times if adhering to the current schedule. 
-    "
-  )
-```
-
-```{r export-current, echo=FALSE}
-write_rds(p, here::here("data", "current.rds"), compress = "gz")
-```
 
