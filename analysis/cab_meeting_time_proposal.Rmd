@@ -166,25 +166,28 @@ people %>%
       map_chr(format, "%z"),
     future_utc = tz %>% 
       lapply(
-        \(x) time_at_tz(now() + 86400 * floor(365/4), x)
+        \(x) time_at_tz(now() + 9 * 30 * 24*60 * floor(365/4), x)
       ) %>% 
-      map_chr(format, "%z") %>% 
-      str_replace("(.+)([0-9]{2})$", "\\1:\\2"), 
+      map_chr(format, "%z")
   ) %>% 
-  arrange(as.numeric(current_utc)) %>% 
-  chop(member) %>% 
+  arrange(as.numeric(current_utc), as.numeric(future_utc)) %>% 
+  chop(all_of(c("member", "tz")))%>% 
+  # chop(member) %>% 
   mutate(
     current_utc = str_replace(current_utc, "(.+)([0-9]{2})$", "\\1:\\2"),
+    future_utc = str_replace(future_utc, "(.+)([0-9]{2})$", "\\1:\\2"),
     n = map_int(member, length),
-    member = map_chr(member, paste, collapse = ", ")
+    member = map_chr(member, paste, collapse = ", "),
+    tz = map_chr(tz, \(x) paste(unique(x), collapse = ", "))
   ) %>% 
+  dplyr::select(member, tz, n, ends_with("utc")) %>% 
   rename_with(
     \(x) x %>% str_to_title() %>% str_replace_all("_utc", " UTC") %>% str_replace("Tz", "TZ")
   ) %>% 
   pander(
-    justify = "lrrlr",
+    justify = "llrlr",
     caption = "
-    Breakdown of all time zones with the current +UTC shift and where that shift will be 3 months into the future.
+    Breakdown of all time zones with the current +UTC shift and where that shift will be 9 months into the future.
     The largest 'empty space' time period is between the US/Chicago & Australia/Melbourne, with no members in the time-zones between the two.
     For Apr-Sep this is 9hrs ($\\pm 1$ day), whilst for Nov-Feb this will be 7 hours.
     The other large time gaps are between 1: Helsinki & Tokyo, and, 2: Dublin/London and the US East Coast.
@@ -223,7 +226,8 @@ dates %>%
     and looking for the time differences.
     Time-zone differences between the US/Central & Melbourne are given as 'Pacific Diff', 
     whilst those between Europe/Helsinki and Asia/Tokyo are given as 'Contintental Diff'.
-    "
+    ",
+    emphasize.italics.rows = which(.$`Pacific Diff` == .$`Contintental Diff`)
   )
 ```
 \clearpage
