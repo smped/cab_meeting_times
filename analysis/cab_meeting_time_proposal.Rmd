@@ -246,6 +246,7 @@ For the other times, the best region to place these is between the most eastern 
 p <- dates %>% 
   mutate(
     utc = case_when(
+      # month %in% c("Jan", "Feb", "Nov", "Dec") ~ as_datetime(date + 7/24),
       month %in% c("Jan", "Feb", "Nov", "Dec") ~ as_datetime(date + 21/24),
       TRUE ~ as_datetime(date + 12/24)
     )
@@ -433,3 +434,68 @@ write_rds(p, here::here("data", "western.rds"), compress = "gz")
 ```
 
 
+## Proposal Four: Favouring Two Time Zones
+
+This proposal sets the start time at 7am for the earliest member favouring:
+
+1. Europe, Africa & the Asia-Pacific
+2. The Americas, Europe & Africa
+
+
+```{r make-prop4-schedule,  fig.cap = "Proposed schedule favouring two regions siultaneously"}
+p <- dates %>% 
+  mutate(
+    utc = case_when(
+      month %in% c("Jan", "Feb", "Nov", "Dec") ~ as_datetime(date + 7/24),
+      # month %in% c("Jan", "Feb", "Nov", "Dec") ~ as_datetime(date + 21/24),
+      TRUE ~ as_datetime(date + 12/24)
+    )
+  ) %>% 
+  draw_schedule(people)
+p
+```
+
+`r pander(table(p@data$status))`
+
+Key points:
+
+- Those in the Americas will find it hard to attend Nov-Feb. This includes Lori as a key member
+
+
+```{r tbl-horrible4}
+p@data %>% 
+  summarise(
+    `After 11pm` = sum(time == "00:00" | time_dbl >= 23),
+    `6am Or Earlier` = sum(time_dbl <= 6 & time_dbl > 0),
+    .by = member
+  ) %>% 
+  dplyr::filter(
+    rowSums(.[-1]) > 0
+  ) %>% 
+  bind_rows(
+    summarise(.[-1], across(everything(), sum)) %>% mutate(member = "Total")
+  ) %>% 
+  mutate(
+    member = str_remove_all(member, "\\*"),
+    TZ = unlist(people)[member],
+    `Combined Problematic` = `After 11pm` + `6am Or Earlier` 
+  ) %>% 
+  dplyr::select(Member = member, TZ, everything()) %>% 
+  pander(
+    justify = "llrrr",
+    emphasize.strong.rows = which(str_detect(.$Member, "Total")),
+    caption = "
+    Summary of members with the most problematic meeting times,
+    even after avoiding the 1am to 5am timezone. 
+    These members are the most disadvantaged by this proposal
+    "
+  )
+```
+
+
+```{r export-favour2, echo=FALSE}
+write_rds(p, here::here("data", "favouring_two.rds"), compress = "gz")
+```
+
+
+\clearpage
