@@ -1,7 +1,7 @@
 name: Proposed CAB Meeting Times
 output_dir: ../docs
 navbar:
-  title: Proposed CAB Meeting Times (2025)
+  title: Proposed CAB Meeting Times (2026)
   left:
   - text: Home
     href: index.html
