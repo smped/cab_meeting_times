@@ -1,6 +1,10 @@
 ---
-title: "Proposed CAB Meeting Times"
-date: "`r format(Sys.Date(), '%d %B, %Y')`"
+title: "CAB Meeting Times"
+author: "Stevie Pederson"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -11,517 +15,500 @@ knitr::opts_chunk$set(
 ```
 
 ```{r packages}
+library(timechange)
 library(tidyverse)
 library(ggtext)
-library(reactable)
-library(htmltools)
-theme_set(
-  theme_bw() + theme(title = element_text(hjust = 0.5))
-)
+library(pander)
+panderOptions("missing", "")
+panderOptions("table.split.table", Inf)
 ```
 
-```{r people}
-people <- list(
-  Stevie = "Australia/Adelaide",
-  Janani = "US/Mountain",
-  Lori = "US/Eastern",
-  Enis = "US/Eastern",
-  Umar = "Africa/Lagos",
-  Zahraa = "US/Central",
-  Aedin = "Europe/Dublin",
-  Jasmine = "US/Eastern",
-  Xueyi = "Australia/Melbourne",
-  Maria = "Europe/Dublin",
-  Leo = "Europe/Helsinki",
-  Mengbo = "Australia/Melbourne",
-  Kozo = "Japan",
-  Tobi = "US/Eastern",
-  Nicole = "US/Pacific",
-  Johannes = "Europe/Rome",
-  Lluís = "Europe/Madrid",
-  Kevin = "Europe/London",
-  Luyi = "Asia/Shanghai",
-  Hedia = "Europe/Madrid",
-  Jiefei = "US/Central"
-)
+```{r draw-schedule}
+draw_schedule <- function(
+    dates, people, bus_hours = c(8, 18), upr = 23, lwr = 5,
+    exec = c("Stevie", "Lori"), ...
+) {
+  exec_regexp <- paste0("(", paste(exec, collapse = "|"), ")")
+  people %>%
+    lapply(
+      \(x) mutate(
+        dates,
+        tz = x,
+        local = time_at_tz(utc, tz = x),
+        time =  format(local, "%H:%M"),
+        time_dbl =  hour(local) + minute(local)/60
+      )
+    ) %>%
+    bind_rows(.id = "member") %>%
+    mutate(
+      member = fct(
+        member,
+        levels = people %>%
+          lapply(\(x) now(tzone = x)) %>%
+          lapply(format, "%z") %>%
+          map_dbl(as.numeric) %>%
+          sort() %>%
+          names()
+      ) %>% 
+        fct_relabel(\(x) str_replace_all(x, exec_regexp, "**\\1**"))
+    ) %>%
+    arrange(member) %>%
+    mutate(
+      tz = tz %>% str_replace_all("(/)(.+)", "\n(\\2)") %>% fct_inorder(),
+      status = case_when(
+        time_dbl >= upr | time_dbl <= lwr ~ "Horrible",
+        time_dbl >= max(bus_hours) | time_dbl < min(bus_hours) ~ "Outside Hours",
+        time_dbl >= min(bus_hours) | time_dbl < max(bus_hours) ~ "Business Hours"
+      ) %>%
+        fct(levels = c("Horrible", "Outside Hours", "Business Hours")),
+      month = fct(as.character(month), levels = month.abb[c(3:12, 1:2)]),
+      year = year(utc)
+    ) %>%
+    ggplot(aes(month, member)) +
+    geom_raster(aes(fill = status), alpha = 0.6) +
+    geom_text(aes(label = time), size = 3) +
+    facet_grid(rows = vars(tz), cols = vars(year), scales = "free", space = "free", ) +
+    labs(x = c(), y = c(), fill = "Status") +
+    scale_x_discrete(expand = expansion(0, 0)) +
+    scale_y_discrete(expand = expansion(0, 0)) +
+    scale_fill_manual(values = c("red3", "yellow3", "green3")) +
+    theme_bw() +
+    theme(
+      legend.position = "bottom", 
+      axis.text.y = element_markdown(), 
+      strip.text.y = element_text(angle = 0),
+      panel.spacing = unit(0, "npc"),
+      panel.grid = element_blank()
+    )
+}
 ```
 
 
 ## Introduction
 
-This contains a set of proposals for possible CAB meetings times to be voted on.
-The full explanations, including the working and thought processes, are [here](./cab_meeting_time_proposal.pdf).
+The initial proposal to shift meeting times in a rotating fashion was an attempt to be fair to all members, however, in reality there is a growing sense that the idea is not working as successfully as hoped for.
+In reality, there will be no solution that works for everyone as the spread of time zones is just too diverse.
+This is obviously an excellent problem to be wrangling, but it is still a significant challenge.
+A set of proposed options are given below.
 
-Meeting times for members are classified as:
+I've considered my understanding of standard business hours (8am to 5pm) to be the optimal time range for people, and between the hours of 11pm to 5am to be 'horrible'.
+Anything between these is 'Outside of Hours', which should still be realistic times for everyone, despite them not being super-convenient.
 
-1. Business Hours: 8am to 5pm meeting times
-2. Outside Hours: 6-7am or 6-10pm meeting times
-3. Horrible: 11pm to 5am meeting times
+An important consideration for each option is not only our own preferences, but the availability of Lori as both secretary and member of the Bioconductor Core Team, and the current co-chairs Kevin & Stevie.
 
-These can be considered as a reasonable description overall, despite some members finding a midnight meeting as quite convenient and a 6am start to be horrifying, with others being completely the opposite.
-It is assumed that people should be *easily able to attend meetings during business hours* and can be *reasonably expected to manage outside hours meetings* as well.
+There are four proposals given below as the probable best options for the current CAB.
 
-All calculations below were made using the timezones contained in `OlsonNames()` and taking UTC as the reference timezone.
+1. Fixing the start time at 12pm UTC for every meeting
+2. Ensure two regions are favoured
+3. Placing the 'horrible times' in the empty space between the furthest spread members
+4. Starting based on the Western-most member of each region
 
-## Current Schedule {.tabset}
+Key daylight savings shifts *occur in April* (South off + North on) and *Oct/Nov* (South On, North Off), with some staggering of commencement + exit dates.
+*All proposals have been set to try and sync in with these shifts as smoothly as possible.*
 
+Feel free to play with the code in the accompanying rmarkdown. 
 
-```{r load-current}
-current <- here::here("data", "current.rds") %>% read_rds()
-```
+\clearpage
 
-This schedule was originally devised by shifting the meeting in 8 hour increments every 4 months.
+## CAB Members
 
-### Visualisation
-
-```{r fig-current}
-current + ggtitle("The Current Schedule") + theme(plot.title = element_text(hjust = 0.5))
-```
-
-### Summary Table
-
-```{r tbl-current, echo = FALSE}
-cp <- tags$caption(
-  tags$em(
-    "Summary of meeting times for all members under the current schedule. Members are disadvantaged in an approximately equal fashion."
-  )
+```{r people-dates}
+people <- list(
+  Stevie = "Australia/Adelaide",
+  Lori = "America/New_York",
+  Enis = "America/New_York",
+  Umar = "Africa/Lagos",
+  Zahraa = "America/Chicago",
+  Aedin = "Europe/Dublin",
+  Maria = "Europe/Dublin",
+  Mengbo = "Australia/Melbourne",
+  Kozo = "Asia/Tokyo",
+  Tobi = "America/New_York",
+  Johannes = "Europe/Rome",
+  Lluís = "Europe/Madrid",
+  Kevin = "Europe/London",
+  Eliana = "Europe/Tirane",
+  Fabricio = "Europe/Brussels",
+  Izabela = "America/Belem",
+  Laurent = "Europe/Brussels",
+  Martha = "Europe/London",
+  Tuomas = "Europe/Helsinki",
+  Zuguang = "Asia/Hong_Kong"
 )
-tbl <- current$data %>%
-  summarise(
-    n = dplyr::n(), .by = c(member, status)
-  ) %>% 
-  pivot_wider(names_from = "status", values_from = "n", values_fill = 0) %>% 
+dates <- tibble(
+  date = ymd("20260301") + seq(0, 365),
+  weekday = wday(date, label = TRUE),
+  month = month(date, label = TRUE),
+  exists = TRUE
+) %>%
   mutate(
-    member = fct_relabel(member, \(x) str_remove_all(x, "\\*")),
-    TZ = unlist(people)[as.character(member)]
-  ) %>% 
-  chop(member) %>% 
-  mutate(n = map_int(member, length)) %>% 
-  dplyr::select(TZ, n, member, `Business Hours`, everything()) %>% 
-  reactable(
-    showPageSizeOptions = FALSE, filterable = TRUE,pagination = FALSE,
-    columns = list(
-      n = colDef(
-        "In Time-Zone", maxWidth = 100, 
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            colInfo.data.forEach(function(row) {
-              n_members += row['n']
-            })
-            return (n_members).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE
-      ),
-      member = colDef("CAB Member(s)"),
-      TZ = colDef("Time-Zone",  footer = tags$b("Total")),
-      `Business Hours` = colDef(
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            let hrs = 0
-            let total = 0
-            colInfo.data.forEach(function(row) {
-              n_members = row['n']
-              hrs = row['Business Hours']
-              total += n_members * hrs
-            })
-            return (total).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE
-      ),
-      `Outside Hours` = colDef(
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            let hrs = 0
-            let total = 0
-            colInfo.data.forEach(function(row) {
-              n_members = row['n']
-              hrs = row['Outside Hours']
-              total += n_members * hrs
-            })
-            return (total).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE
-      ),
-      `Horrible` = colDef(
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            let hrs = 0
-            let total = 0
-            colInfo.data.forEach(function(row) {
-              n_members = row['n']
-              hrs = row['Horrible']
-              total += n_members * hrs
-            })
-            return (total).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE        
-      )
-      ),
-      theme = reactableTheme(style = list(fontSize = 11)),
-      elementId = "tbl-current"
-  )
-browsable(tagList(cp, tbl))
+    nbr = cumsum(exists), .by = c(month, weekday)
+  ) %>%
+  dplyr::filter(
+    weekday == "Thu", nbr == 2
+  ) %>%
+  droplevels() %>% 
+  dplyr::select(date, month)
 ```
 
-### Key Points
 
-- Just doesn't seem to work despite being great in theory
-- Ironically places convenient times for Asia when Australians are on their summer breaks
+As it currently stands, the CAB contains `r length(people)` members, spread across `r length(unique(unlist(people)))` time-zones, with these broken down and grouped in the following table.
+I also note that time-zones may not describe exactly where everyone lives, but these are chosen to match the output of `OlsonNames()` which is how `R` wrangles time-zones.
+All projections have been made based on UTC time.
 
-## Fixed At 9am US/Eastern {.tabset}
-
-
-```{r load-ny-fixed}
-ny_fixed <- here::here("data", "ny_fixed.rds") %>% read_rds()
-```
-
-This proposal attempts to help Lori continually attend, as member of the Bioconductor Core Team and CAB secretary, by starting at 9am US/Eastern every month.
-For some of the year, this potentially enables full attendance.
-
-### Visualisation
-
-```{r fig-ny-fixed}
-ny_fixed + ggtitle("Start Times Constantly at 9am (US/Eastern)") + theme(plot.title = element_text(hjust = 0.5))
-```
-
-### Summary Table
-
-```{r tbl-ny-fixed, echo = FALSE}
-cp <- tags$caption(
-  tags$em(
-    "Summary of meeting times for all members under the schedule fixing start times at 9am US/Eastern. Members in the Asia/Pacific region are the most strongly disadvantaged."
-  )
-)
-tbl <- ny_fixed$data %>%
-  summarise(
-    n = dplyr::n(), .by = c(member, status)
-  ) %>% 
-  pivot_wider(names_from = "status", values_from = "n", values_fill = 0) %>% 
+```{r cab-summary-tbl}
+people %>% 
+  unlist() %>% 
+  enframe(name = "member", value = "tz") %>% 
   mutate(
-    member = fct_relabel(member, \(x) str_remove_all(x, "\\*")),
-    TZ = unlist(people)[as.character(member)]
+    current_utc = tz %>% 
+      lapply(
+        \(x) now(tzone = x)
+      ) %>% 
+      map_chr(format, "%z"),
+    future_utc = tz %>% 
+      lapply(
+        \(x) time_at_tz(now() + 3 * 30 * 24*60 * floor(365/4), x)
+      ) %>% 
+      map_chr(format, "%z")
   ) %>% 
-  chop(member) %>% 
-  mutate(n = map_int(member, length)) %>% 
-  dplyr::select(TZ, n, member, `Business Hours`, everything()) %>% 
-  reactable(
-    showPageSizeOptions = FALSE, filterable = TRUE,pagination = FALSE,
-    columns = list(
-      n = colDef(
-        "In Time-Zone", maxWidth = 100, 
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            colInfo.data.forEach(function(row) {
-              n_members += row['n']
-            })
-            return (n_members).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE
-      ),
-      member = colDef("CAB Member(s)"),
-      TZ = colDef("Time-Zone",  footer = tags$b("Total")),
-      `Business Hours` = colDef(
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            let hrs = 0
-            let total = 0
-            colInfo.data.forEach(function(row) {
-              n_members = row['n']
-              hrs = row['Business Hours']
-              total += n_members * hrs
-            })
-            return (total).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE
-      ),
-      `Outside Hours` = colDef(
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            let hrs = 0
-            let total = 0
-            colInfo.data.forEach(function(row) {
-              n_members = row['n']
-              hrs = row['Outside Hours']
-              total += n_members * hrs
-            })
-            return (total).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE
-      ),
-      `Horrible` = colDef(
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            let hrs = 0
-            let total = 0
-            colInfo.data.forEach(function(row) {
-              n_members = row['n']
-              hrs = row['Horrible']
-              total += n_members * hrs
-            })
-            return (total).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE        
-      )
-      ),
-      theme = reactableTheme(style = list(fontSize = 11)),
-      elementId = "tbl-ny_fixed"
-  )
-browsable(tagList(cp, tbl))
-```
-
-### Key Points
-
-- Relatively convenient for Lori, Janani & Stevie as secretary & co-chairs
-- Highly inconvenient for Mengbo & Xueyi
-- Also quite difficult for Nicole, Kozo and Luyi
-
-## Setting Start Times By The Western-Most Members {.tabset}
-
-
-```{r load-western}
-western <- here::here("data", "western.rds") %>% read_rds()
-```
-
-This proposal shifts times every 4 months placing the western-most member of each region as the earliest start time (6am).
-Until March, US/Eastern was chosen instead of Europe/Dublin as an attempt to slightly maximise attendance.
-
-### Visualisation
-
-```{r fig-western}
-western + ggtitle("Starting at 6am By Region") + theme(plot.title = element_text(hjust = 0.5))
-```
-
-### Summary Table
-
-```{r tbl-western, echo = FALSE}
-cp <- tags$caption(
-  tags$em(
-    "Summary of meeting times starting at 6am for the most western member of each region. 
-    Members on the edges of each region are the most strongly disadvantaged."
-  )
-)
-tbl <- western$data %>%
-  summarise(
-    n = dplyr::n(), .by = c(member, status)
-  ) %>% 
-  pivot_wider(names_from = "status", values_from = "n", values_fill = 0) %>% 
+  arrange(as.numeric(current_utc), as.numeric(future_utc)) %>% 
+  chop(all_of(c("member", "tz")))%>% 
+  # chop(member) %>% 
   mutate(
-    member = fct_relabel(member, \(x) str_remove_all(x, "\\*")),
-    TZ = unlist(people)[as.character(member)]
+    current_utc = str_replace(current_utc, "(.+)([0-9]{2})$", "\\1:\\2"),
+    future_utc = str_replace(future_utc, "(.+)([0-9]{2})$", "\\1:\\2"),
+    n = map_int(member, length),
+    member = map_chr(member, paste, collapse = ", "),
+    tz = map_chr(tz, \(x) paste(unique(x), collapse = ", "))
   ) %>% 
-  chop(member) %>% 
-  mutate(n = map_int(member, length)) %>% 
-  dplyr::select(TZ, n, member, `Business Hours`, everything()) %>% 
-  reactable(
-    showPageSizeOptions = FALSE, filterable = TRUE,pagination = FALSE,
-    columns = list(
-      n = colDef(
-        "In Time-Zone", maxWidth = 100, 
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            colInfo.data.forEach(function(row) {
-              n_members += row['n']
-            })
-            return (n_members).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE
-      ),
-      member = colDef("CAB Member(s)"),
-      TZ = colDef("Time-Zone",  footer = tags$b("Total")),
-      `Business Hours` = colDef(
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            let hrs = 0
-            let total = 0
-            colInfo.data.forEach(function(row) {
-              n_members = row['n']
-              hrs = row['Business Hours']
-              total += n_members * hrs
-            })
-            return (total).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE
-      ),
-      `Outside Hours` = colDef(
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            let hrs = 0
-            let total = 0
-            colInfo.data.forEach(function(row) {
-              n_members = row['n']
-              hrs = row['Outside Hours']
-              total += n_members * hrs
-            })
-            return (total).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE
-      ),
-      `Horrible` = colDef(
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            let hrs = 0
-            let total = 0
-            colInfo.data.forEach(function(row) {
-              n_members = row['n']
-              hrs = row['Horrible']
-              total += n_members * hrs
-            })
-            return (total).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE        
-      )
-      ),
-      theme = reactableTheme(style = list(fontSize = 11)),
-      elementId = "tbl-western"
-  )
-browsable(tagList(cp, tbl))
-```
-
-### Key Points
-
-- Historically, after 10pm is difficult for most Americans, which motivated the shift to a 6am start for US/Eastern. Otherwise, all US people would be after 10pm and unlikely to attend
-- Potentially quite difficult for Luyi & Kozo as meetings never occur during their standard business hours
-- Also potentially quite difficult for Nicole
-
-## Difficult Meeting Times in Empty Time-Zones {.tabset}
-
-
-```{r load-empty-space}
-empty_space <- here::here("data", "empty_space.rds") %>% read_rds()
-```
-
-This proposal attempts to place meetings which might start between 1 and 5am either in the Pacific, between Australia & the US, or between Eastern Europe and Western Asia.
-
-### Visualisation
-
-```{r fig-empty-space}
-empty_space + ggtitle("Difficult Meeting Start Times In Empty Time Zones") + theme(plot.title = element_text(hjust = 0.5))
-```
-
-### Summary Table
-
-```{r tbl-empty-space, echo = FALSE}
-cp <- tags$caption(
-  tags$em(
-    "Summary of meeting times for all members under the schedule placing the most difficult meeting times in time-zones without CAB members. 
-    Members on the edges of these regions are the most strongly disadvantaged."
-  )
-)
-tbl <- empty_space$data %>%
-  summarise(
-    n = dplyr::n(), .by = c(member, status)
+  dplyr::select(member, tz, n, ends_with("utc")) %>% 
+  rename_with(
+    \(x) x %>% str_to_title() %>% str_replace_all("_utc", " UTC") %>% str_replace("Tz", "TZ")
   ) %>% 
-  pivot_wider(names_from = "status", values_from = "n", values_fill = 0) %>% 
+  pander(
+    justify = "llrlr",
+    caption = "
+    Breakdown of all time zones with the current +UTC shift and where that shift will be 3 months into the future.
+    The largest 'empty space' time period is between the US/Chicago & Australia/Melbourne, with no members in the time-zones between the two.
+    For Apr-Sep this is 9hrs ($\\pm 1$ day), whilst for Nov-Feb this will be 7 hours.
+    The other large time gaps are between 1: Helsinki & Tokyo, and, 2: Dublin/London and the US East Coast.
+    "
+  )
+```
+
+
+\clearpage
+
+
+## Proposal One: Fix Times at 12pm UTC
+
+This effectively places the horrible meeting times between Australia/Melbourne and America/Chicago for the entire year.
+
+Key Points:
+
+- This is good for the key members Lori, Kevin & Stevie
+- **Strongly disadvantages Mengbo** 
+- Possibly workable but **also inconvenient for Zahraa** & all Asia/Pacific members
+- Offers the highest number of meetings scheduled during business hours
+
+```{r schedule-utc-fixed, fig.cap = "Proposed meeting times holding the start time fixed at 12pm UTC"}
+p <- dates %>% 
   mutate(
-    member = fct_relabel(member, \(x) str_remove_all(x, "\\*")),
-    TZ = unlist(people)[as.character(member)]
+    utc = as_datetime(date + 12/24)
   ) %>% 
-  chop(member) %>% 
-  mutate(n = map_int(member, length)) %>% 
-  dplyr::select(TZ, n, member, `Business Hours`, everything()) %>% 
-  reactable(
-    showPageSizeOptions = FALSE, filterable = TRUE,pagination = FALSE,
-    columns = list(
-      n = colDef(
-        "In Time-Zone", maxWidth = 100, 
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            colInfo.data.forEach(function(row) {
-              n_members += row['n']
-            })
-            return (n_members).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE
-      ),
-      member = colDef("CAB Member(s)"),
-      TZ = colDef("Time-Zone",  footer = tags$b("Total")),
-      `Business Hours` = colDef(
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            let hrs = 0
-            let total = 0
-            colInfo.data.forEach(function(row) {
-              n_members = row['n']
-              hrs = row['Business Hours']
-              total += n_members * hrs
-            })
-            return (total).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE
-      ),
-      `Outside Hours` = colDef(
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            let hrs = 0
-            let total = 0
-            colInfo.data.forEach(function(row) {
-              n_members = row['n']
-              hrs = row['Outside Hours']
-              total += n_members * hrs
-            })
-            return (total).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE
-      ),
-      `Horrible` = colDef(
-        footer = JS(
-          "function(colInfo) {
-            let n_members = 0
-            let hrs = 0
-            let total = 0
-            colInfo.data.forEach(function(row) {
-              n_members = row['n']
-              hrs = row['Horrible']
-              total += n_members * hrs
-            })
-            return (total).toFixed(0).bold()
-          }"
-        ),
-        html = TRUE        
-      )
-      ),
-      theme = reactableTheme(style = list(fontSize = 11)),
-      elementId = "tbl-empty_space"
-  )
-browsable(tagList(cp, tbl))
+  draw_schedule(people)
+p 
 ```
 
-### Key Points
 
-- The largest regions with no CAB members are between Melbourne and US/Pacific from April to Oct. This is during the northern summer and southern winter
-- Once the next round of Daylight Savings shifts occur, this becomes between Europe/Helsinki and Asia/Shanghai as the southern hemisphere moves into summer.
-- Those on the borders of these time zones will be disadvantaged, most noticeably:
-    + Nicole, Mengbo, Xueyi, Kozo & Luyi
-    + Leo, Lluis, Hedia, Johannes & Umar
-- Also relatively convenient for Steve, Lori & Janani
-- Has only two basic shifts from one pattern to the other & back
+`r pander(table(p@data$status))`
+
+```{r tbl-horrible2}
+p@data %>% 
+  summarise(
+    `After 11pm` = sum(time == "00:00" | time_dbl >= 23),
+    `6am Or Earlier` = sum(time_dbl <= 6 & time_dbl > 0),
+    .by = member
+  ) %>% 
+  dplyr::filter(
+    rowSums(.[-1]) > 0
+  ) %>% 
+  bind_rows(
+    summarise(.[-1], across(everything(), sum)) %>% mutate(member = "Total")
+  ) %>% 
+  mutate(
+    member = str_remove_all(member, "\\*"),
+    TZ = unlist(people)[member],
+    `Combined Problematic` = `After 11pm` + `6am Or Earlier` 
+  ) %>% 
+  dplyr::select(Member = member, TZ, everything()) %>% 
+  pander(
+    justify = "llrrr",
+    emphasize.strong.rows = which(str_detect(.$Member, "Total")),
+    caption = "
+    Summary of members with the most problematic meeting times,
+    if holding the start time fixed for US/Eastern. 
+    These members are the most disadvantaged by this proposal
+    "
+  )
+```
+
+```{r export-ny-fixed, echo=FALSE}
+write_rds(p, here::here("data", "ny_fixed.rds"), compress = "gz")
+```
+
+\clearpage
+
+## Proposal Two: Favouring Two Time Zones
+
+This proposal sets the start time at 7am for the earliest member favouring:
+
+1. The Americas, Europe & Africa (Mar-Oct)
+2. Europe, Africa & the Asia-Pacific (Nov-Feb)
+
+Key points:
+
+- Those in the Americas will find it hard to attend Nov-Feb. *This includes Lori as a key member*
+- Strongly disadvantages Zahraa & Mengbo, who never have meetings during business hours
+
+
+```{r make-prop4-schedule,  fig.cap = "Proposed schedule favouring two regions siultaneously"}
+p <- dates %>% 
+  mutate(
+    utc = case_when(
+      month %in% c("Jan", "Feb", "Nov", "Dec") ~ as_datetime(date + 7/24),
+      # month %in% c("Sep", "Oct") ~ as_datetime(date + 6/24),
+      # month %in% c("Apr") ~ as_datetime(date + 6/24),
+      # month %in% c("Mar", "Apr") ~ as_datetime(date + 7/24),
+      TRUE ~ as_datetime(date + 12/24)
+    )
+  ) %>% 
+  draw_schedule(people)
+p
+```
+
+`r pander(table(p@data$status))`
+
+
+```{r tbl-horrible4}
+p@data %>% 
+  summarise(
+    `After 11pm` = sum(time == "00:00" | time_dbl >= 23),
+    `6am Or Earlier` = sum(time_dbl <= 6 & time_dbl > 0),
+    .by = member
+  ) %>% 
+  dplyr::filter(
+    rowSums(.[-1]) > 0
+  ) %>% 
+  bind_rows(
+    summarise(.[-1], across(everything(), sum)) %>% mutate(member = "Total")
+  ) %>% 
+  mutate(
+    member = str_remove_all(member, "\\*"),
+    TZ = unlist(people)[member],
+    `Combined Problematic` = `After 11pm` + `6am Or Earlier` 
+  ) %>% 
+  dplyr::select(Member = member, TZ, everything()) %>% 
+  pander(
+    justify = "llrrr",
+    emphasize.strong.rows = which(str_detect(.$Member, "Total")),
+    caption = "
+    Summary of members with the most problematic meeting times,
+    even after avoiding the 1am to 5am timezone. 
+    These members are the most disadvantaged by this proposal
+    "
+  )
+```
+
+
+```{r export-favour2, echo=FALSE}
+write_rds(p, here::here("data", "favouring_two.rds"), compress = "gz")
+```
+
+
+\clearpage
+
+
+## Proposal Three: Placing Difficult Times In The Empty Space
+
+
+
+```{r tbl-empty-space}
+dates %>% 
+  mutate(
+    date = as_datetime(date),
+    `US/Central` = time_at_tz(date, "America/Chicago"),
+    `Australia/Melbourne` = time_at_tz(date, "Australia/Melbourne"),
+    `Europe/Helsinki` = time_at_tz(date, "Europe/Helsinki"),
+    `Asia/Hong_Kong` = time_at_tz(date, "Asia/Hong_Kong")
+  ) %>% 
+  mutate(
+    `US/Central` = hour(`US/Central`) + minute(`US/Central`) / 60,
+    `Australia/Melbourne` = hour(`Australia/Melbourne`) + minute(`Australia/Melbourne`) / 60,
+    `Europe/Helsinki` = hour(`Europe/Helsinki`) + minute(`Europe/Helsinki`) / 60,
+    `Asia/Hong_Kong` = hour(`Asia/Hong_Kong`) + minute(`Asia/Hong_Kong`) / 60,
+    pacific_diff = abs(`Australia/Melbourne` - `US/Central`),
+    contintental_diff = abs(`Asia/Hong_Kong` - `Europe/Helsinki`)
+  ) %>% 
+  dplyr::select(date, month, ends_with("diff")) %>% 
+  mutate(
+    `place_1-4am_in` = ifelse(pacific_diff > contintental_diff, "Pacific Ocean", "Helsinki-Asia")
+  ) %>% 
+  rename_with(\(x) x %>% str_replace_all("_", " ") %>% str_to_title()) %>% 
+  pander(
+    justify = "llrrl",
+    caption = "
+    Taking the two largest 'empty-space' regions, where no participants live, 
+    and looking for the time differences.
+    Time-zone differences between the US/Central & Melbourne are given as 'Pacific Diff', 
+    whilst those between Europe/Helsinki and Asia/Tokyo are given as 'Contintental Diff'.
+    ",
+    emphasize.italics.rows = which(.$`Pacific Diff` == .$`Contintental Diff`)
+  )
+```
+
+The strategy attempted here is to find the 'empty' region on the planet at each given month, where no CAB members are located, which contains the longest duration relative to *everyone's lived time-zone*.
+If we place the difficult middle-of-the-night meeting times in these empty regions, the hoped for outcome will be the fewest CAB members having to endure middle-of-the-night meetings.
+Of course, the CAB contains a mix of 'morning people' and 'night-owls', making this a a near impossible challenge, however, if we assume somewhere between 1-4am should be placed in the centre of these empty regions, this might be the best starting point.
+
+For March to October, the best region to place the middle-of-the-night times is in the Pacific Ocean with an 8-9hr difference.
+Whilst previously, a viable gap existed between Kozo as the western-most member of the Asia-Pacific Region and Tuomas as the eastern-most member of the European region, with Zuguang's return to China, this no longer forms a viable option.
+
+Key points:
+
+- No-one has a meeting starting anywhere between 1am and 5am, however
+    - Zuguang will have `r nrow(p@data %>% dplyr::filter(member == "Zuguang", time_dbl == 6))` meetings scheduled at 6am
+    - Tuomas will have `r nrow(p@data %>% dplyr::filter(member == "Tuomas", time_dbl == 0))` meetings at midnight
+    - Multiple Europeans have meetings after 11pm
+    - Mengbo has `r nrow(p@data %>% dplyr::filter(member == "Mengbo", time_dbl == 23))` meeting(s) after 11pm
+    - Zuguang & Kozo never have a meeting in business hours
+- People near the edges of the empty-space are disadvantaged
+    - Most of Europe/Africa and the Asia/Pacific are inconvenient for Nov through Mar
+    - US/Central, Australia/Melbourne and Japan are inconvenient for Apr to Oct
+
+
+
+```{r make-prop1-schedule,  fig.cap = "Proposed schedule placing the largest time regions without members into the middle of the night"}
+p <- dates %>% 
+  mutate(
+    utc = case_when(
+      month %in% c("Jan", "Feb", "Nov", "Dec") ~ as_datetime(date - 2 /24),
+      TRUE ~ as_datetime(date - 12/24)
+    ),
+    year = year(utc)
+  ) %>% 
+  draw_schedule(people)
+p 
+```
+
+`r pander(table(p@data$status))`
+
+
+
+```{r tbl-horrible}
+p@data %>% 
+  summarise(
+    `After 11pm` = sum(time == "00:00" | time_dbl >= 23),
+    `6am Or Earlier` = sum(time_dbl <= 6 & time_dbl > 0),
+    .by = member
+  ) %>% 
+  dplyr::filter(
+    rowSums(.[-1]) > 0
+  ) %>% 
+  bind_rows(
+    summarise(.[-1], across(everything(), sum)) %>% mutate(member = "Total")
+  ) %>% 
+  mutate(
+    member = str_remove_all(member, "\\*"),
+    TZ = unlist(people)[member],
+    `Combined Problematic` = `After 11pm` + `6am Or Earlier` 
+  ) %>% 
+  dplyr::select(Member = member, TZ, everything()) %>% 
+  pander(
+    justify = "llrrr",
+    emphasize.strong.rows = which(str_detect(.$Member, "Total")),
+    caption = "
+    Summary of members with the most problematic meeting times,
+    even after avoiding the 1am to 5am timezone. 
+    These members are the most disadvantaged by this proposal
+    "
+  )
+```
+
+
+```{r export-empty, echo=FALSE}
+write_rds(p, here::here("data", "empty_space.rds"), compress = "gz")
+```
+
+\clearpage
+
+
+## Proposal Four: Start Times Based On The Western-Most Member
+
+This is a *slightly modified version of an earlier approach*, where meetings shift every 4 months. 
+For each block, we take the western-most member from each of Asia, Europe & the US as the key member.
+We then start meeting times *at 6 or 7am for that member* to best accommodate other regions, and ensuring at least two larger regions have workable times.
+
+1. 6am starts for Zuguang (Asia).
+2. 7am starts for Zahraa (US).
+3. 7am starts for Western Europe
+
+- *Everyone gets at least 4 meetings in standard business hours (8am to 5pm as shown in green)*
+- No-one has more than 4 'horrible' meeting times (11pm to 5am)
+- For Apr to June, it's conceivable for the entire board to attend.
+- *This is unsatisfactory for Lori as an office-holder*
+
+```{r schedule-western, fig.cap = "Proposed rotating meeting schedule, setting the start time for the western-most member of each region. 1) Aug-Nov favour Europe & Asia, 2) Apr-July favour the US & Europe, whilst 3) Dec-Mar favours Asia & the US"}
+p <- dates %>% 
+  mutate(
+    utc = case_when(
+      month %in% c("Apr", "May", "Jun", "Jul") ~ as_datetime(date + 12/24),
+      month %in% c("Aug", "Sep", "Oct") ~ as_datetime(date + 6/24),
+      month %in% c("Nov") ~ as_datetime(date + 7/24),
+      TRUE ~ as_datetime(date + 22/24)
+    )
+  ) %>% 
+  draw_schedule(people)
+p
+```
+
+`r pander(table(p@data$status))`
+
+```{r tbl-horrible3}
+p@data %>% 
+  summarise(
+    `After 11pm` = sum(time == "00:00" | time_dbl >= 23),
+    `6am Or Earlier` = sum(time_dbl <= 6 & time_dbl > 0),
+    .by = member
+  ) %>% 
+  dplyr::filter(
+    rowSums(.[-1]) > 0
+  ) %>% 
+  bind_rows(
+    summarise(.[-1], across(everything(), sum)) %>% mutate(member = "Total")
+  ) %>% 
+  mutate(
+    member = str_remove_all(member, "\\*"),
+    TZ = unlist(people)[member],
+    `Combined Problematic` = `After 11pm` + `6am Or Earlier` 
+  ) %>% 
+  dplyr::select(Member = member, TZ, everything()) %>% 
+  pander(
+    justify = "llrrr",
+    emphasize.strong.rows = which(str_detect(.$Member, "Total")),
+    caption = "
+    Summary of members with the most problematic meeting times,
+    if holding the start time fixed for the most western member of each region. 
+    These members are the most disadvantaged by this proposal
+    "
+  )
+```
+
+```{r export-western, echo=FALSE}
+write_rds(p, here::here("data", "western.rds"), compress = "gz")
+```
+
+
+
+
