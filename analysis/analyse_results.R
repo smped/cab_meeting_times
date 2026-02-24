@@ -5,12 +5,13 @@
 library(tidyverse)
 library(timechange)
 library(googlesheets4)
+library(ggtext)
 
 ## Setup attendances for weighted voting
-attendances <- here::here("data", "attendance_summary_2024.rds") %>%
+attendances <- here::here("data", "attendance_summary_2025.rds") %>%
   read_rds()
 ## Load the proposals
-proposals <- c("current", "ny_fixed", "western", "empty_space")
+proposals <- c("ny_fixed", "favouring_two", "western", "empty_space")
 schedules <- proposals %>%
   paste0(".rds") %>%
   lapply(\(x) here::here("data", x)) %>%
@@ -18,19 +19,17 @@ schedules <- proposals %>%
   lapply(pluck, "data") %>%
   setNames(nm = proposals)
 ## Load the results & restructure
-form <- "https://docs.google.com/spreadsheets/d/1DKpROdmDwrxjOFwq3Yg7UUNeHoCEXduPO-LEJxTEqdw/edit?usp=sharing"
+form <- "hhttps://docs.google.com/spreadsheets/d/1YKcn5mUJnACEr5cdddQetKc0GoUtAkR5tkBitZw2z6s/edit?usp=sharing"
 results <- read_sheet(form)
 form_tbl <- results %>%
   dplyr::select(-Timestamp, -Comments) %>%
   dplyr::rename(
-    current = `The Current Meeting Schedule`,
-    ny_fixed = `Fixing Start Times at 9am for US/Eastern`,
-    western = `Starting at 6am for the Western-most Members`,
-    empty_space = `Placing 1–5am In The 'Empty' Time Zones`
+    favouring_two = `Favouring Two Time Zones: Americas/Europe then Europ/Asia`,
+    ny_fixed = `Fixing Times at 12pm UTC`,
+    western = `Shifting Every 4 Months (As previously)`,
+    empty_space = `Placing Middle Of The Night Meetings In the Largest Geographical Gaps`
   ) %>%
   mutate(
-    ny_fixed = suppressWarnings(vapply(ny_fixed, as.integer, integer(1))),
-    ny_fixed = ifelse(is.na(ny_fixed), 0L, ny_fixed),
     member = str_extract(`Full Name`, "^[^ ]+") %>%
       str_replace_all("Oluwatobilola", "Tobi"),
   ) %>%
@@ -43,6 +42,7 @@ form_tbl <- results %>%
 schedules %>%
   lapply(
     \(x) {
+      ## Weight votes by how unpleasant they are for the member
       x %>%
         mutate(
           member = str_remove_all(member, "\\*"),
@@ -51,7 +51,7 @@ schedules %>%
         summarise(
           w = sum(w), .by = member
         ) %>%
-        mutate(w = w / sum(w))
+        mutate(w = w / sum(w)) # Sum to one
     }
   ) %>%
   bind_rows(.id = "proposal") %>%
@@ -62,14 +62,15 @@ schedules %>%
   ) %>%
   arrange(desc(n))
 # # A tibble: 4 × 2
-# proposal        n
-# <chr>       <dbl>
-# 1 empty_space  3.52
-# 2 western      3.21
-# 3 ny_fixed     3.13
-# 4 current      3.07
+# proposal          n
+# <chr>         <dbl>
+# 1 empty_space    3.82
+# 2 ny_fixed       3.47
+# 3 western        3.23
+# 4 favouring_two  2.97
 
-## Look at just these repeonses
+## Look at just these responses
 form_tbl %>% dplyr::filter(proposal == "empty_space") %>% arrange(est)
 ## Check the schedule/plot
-here::here("data", "empty_space.rds") %>% read_rds()
+here::here("data", "empty_space.rds") %>%
+  read_rds()
