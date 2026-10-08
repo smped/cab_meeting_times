@@ -87,7 +87,7 @@ draw_schedule <- function(
 
 ## Introduction
 
-The initial proposal to shift meeting times in a rotating fashion was an attempt to be fair to all members, however, in reality there is a growing sense that the idea is not working as successfully as hoped for.
+The initial idea to shift meeting times in a rotating fashion was an attempt to be fair to all members, however, in reality there is a sense that the idea does not work as successfully as hoped for.
 In reality, there will be no solution that works for everyone as the spread of time zones is just too diverse.
 This is obviously an excellent problem to be wrangling, but it is still a significant challenge.
 A set of proposed options are given below.
@@ -99,10 +99,10 @@ An important consideration for each option is not only our own preferences, but 
 
 There are four proposals given below as the probable best options for the current CAB.
 
-1. Fixing the start time at 12pm UTC for every meeting
+1. Fixing the start time at 8am NY-time for every meeting
 2. Ensure two regions are favoured
 3. Placing the 'horrible times' in the empty space between the furthest spread members
-4. Starting based on the Western-most member of each region
+4. Shifting every 4 months, starting based on the Western-most member of each region
 
 Key daylight savings shifts *occur in April* (South off + North on) and *Oct/Nov* (South On, North Off), with some staggering of commencement + exit dates.
 *All proposals have been set to try and sync in with these shifts as smoothly as possible.*
